@@ -71,13 +71,13 @@ public class SingleChannelRateLimiter {
             return true;
 
         if (
-            delayBetweenRequestsInMillis != 0L
-                    && lastAccumulatedRequestTimeInMillis != 0L
-                    && System.currentTimeMillis() - lastAccumulatedRequestTimeInMillis < delayBetweenRequestsInMillis
+            (delayBetweenRequestsInMillis != 0L)
+                    && (lastAccumulatedRequestTimeInMillis != 0L)
+                    && ((System.currentTimeMillis() - lastAccumulatedRequestTimeInMillis) < delayBetweenRequestsInMillis)
         )
             return false;
 
-        return accumulatedRequests.size() + 1 <= maximumBandwidth;
+        return (accumulatedRequests.size() + 1) <= maximumBandwidth;
     }
 
     /**

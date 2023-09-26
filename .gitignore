@@ -1,4 +1,14 @@
+# User-specific stuff
+.idea/
+
+*.iml
+*.ipr
+*.iws
+
+# Cache of project
 .gradle
+.gradletasknamecache
+
 **/build/
 !src/**/build/
 
@@ -11,9 +21,6 @@ gradle-app.setting
 # Avoid ignore Gradle wrappper properties
 !gradle-wrapper.properties
 
-# Cache of project
-.gradletasknamecache
-
 # Eclipse Gradle plugin generated files
 # Eclipse Core
 .project
@@ -23,6 +30,8 @@ gradle-app.setting
 # Ignore Gradle build output directory
 build
 
-# # #
-bin
+# vs code
+**/bin/
+.vs
 .vscode
+.factorypath
