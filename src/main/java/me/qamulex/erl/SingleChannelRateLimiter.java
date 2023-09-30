@@ -6,6 +6,7 @@
 
 package me.qamulex.erl;
 
+import java.time.Clock;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -21,9 +22,10 @@ import lombok.experimental.Accessors;
 @Getter
 public class SingleChannelRateLimiter {
 
-    private final int  maximumBandwidth;
-    private final long timeRangeInMillis;
-    private final long delayBetweenRequestsInMillis;
+    private final Clock clock;
+    private final int   maximumBandwidth;
+    private final long  timeRangeInMillis;
+    private final long  delayBetweenRequestsInMillis;
 
     @Getter(AccessLevel.PRIVATE)
     private final List<Long> accumulatedRequests;
@@ -34,7 +36,7 @@ public class SingleChannelRateLimiter {
      * Clears accumulated requests outside the time range
      */
     public void evict() {
-        long leftTimeRangeBorderInMillis = System.currentTimeMillis() - timeRangeInMillis;
+        long leftTimeRangeBorderInMillis = clock.millis() - timeRangeInMillis;
         accumulatedRequests.removeIf(
                 accumulatedRequestTimeInMillis -> accumulatedRequestTimeInMillis < leftTimeRangeBorderInMillis
         );
@@ -60,16 +62,9 @@ public class SingleChannelRateLimiter {
     /**
      * Checks whether another request is possible
      * 
-     * @see #evict()
-     * 
      * @return <b>true</b> if the request is possible
      */
     public boolean canRequest() {
-        evict();
-
-        if (accumulatedRequests.isEmpty())
-            return true;
-
         if (
             (delayBetweenRequestsInMillis != 0L)
                     && (lastAccumulatedRequestTimeInMillis != 0L)
@@ -77,21 +72,18 @@ public class SingleChannelRateLimiter {
         )
             return false;
 
-        return (accumulatedRequests.size() + 1) <= maximumBandwidth;
+        return availableRequests() > 0;
     }
 
     /**
      * Checks whether the request is possible and accumulates request timestamp
-     * 
-     * @see #canRequest()
-     * @see #evict()
      * 
      * @return <b>true</b> if the request was accumulated
      */
     public boolean request() {
         if (!canRequest())
             return false;
-        accumulatedRequests.add(lastAccumulatedRequestTimeInMillis = System.currentTimeMillis());
+        accumulatedRequests.add(lastAccumulatedRequestTimeInMillis = clock.millis());
         return true;
     }
 
@@ -116,10 +108,19 @@ public class SingleChannelRateLimiter {
     @Accessors(fluent = true, chain = true)
     public static class Builder {
 
+        private Clock                clock                        = Clock.systemUTC();
         private int                  maximumBandwidth             = 5;
         private long                 timeRangeInMillis            = 1000;
         private long                 delayBetweenRequestsInMillis = 0;
         private Supplier<List<Long>> requestAccumulatorSupplier   = LinkedList::new;
+
+        /**
+         * @param clock - time source used for the limiter
+         * @return {@link Builder}
+         */
+        public Builder useClock(Clock clock) {
+            return clock(clock);
+        }
 
         /**
          * @param maximumBandwidth - maximum number of requests within a time range
@@ -176,6 +177,7 @@ public class SingleChannelRateLimiter {
          */
         public SingleChannelRateLimiter build() {
             return new SingleChannelRateLimiter(
+                    clock,
                     maximumBandwidth,
                     timeRangeInMillis,
                     delayBetweenRequestsInMillis,
