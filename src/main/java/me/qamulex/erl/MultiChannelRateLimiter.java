@@ -28,36 +28,11 @@ public class MultiChannelRateLimiter<T> {
     private final Map<T, SingleChannelRateLimiter> channels;
 
     /**
-     * @return amount of {@link #channels}
-     */
-    public int countChannels() {
-        return channels.size();
-    }
-
-    /**
-     * Calls {@link SingleChannelRateLimiter#evict()} method in all {@link #channels}
-     */
-    public void evict() {
-        channels.values().forEach(SingleChannelRateLimiter::evict);
-    }
-
-    /**
      * Calls {@link SingleChannelRateLimiter#reset()} method in all channels and clears {@link #channels channels map}
      */
     public void reset() {
         channels.values().forEach(SingleChannelRateLimiter::reset);
         channels.clear();
-    }
-
-    /**
-     * @param target
-     * @return {@link SingleChannelRateLimiter#availableRequests()} of target channel or {@link #maximumBandwidth default maximum
-     *         bandwidth} if channel is not present
-     */
-    public int availableRequestsOf(T target) {
-        return channels.containsKey(target)
-                ? channels.get(target).availableRequests()
-                : maximumBandwidth;
     }
 
     /**

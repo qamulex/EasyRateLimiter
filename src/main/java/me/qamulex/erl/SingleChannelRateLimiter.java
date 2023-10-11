@@ -28,35 +28,62 @@ public class SingleChannelRateLimiter {
     private final long  delayBetweenRequestsInMillis;
 
     @Getter(AccessLevel.PRIVATE)
-    private final List<Long> accumulatedRequests;
+    private final List<Long> capturedRequests;
     @Getter(AccessLevel.PRIVATE)
-    private long             lastAccumulatedRequestTimeInMillis = 0L;
+    private long             lastRequestTimeInMillis = 0L;
+    private long             nextRequestTimeInMillis = 0L;
 
     /**
-     * Clears accumulated requests outside the time range
+     * Clears all captured requests
      */
-    public void evict() {
-        long leftTimeRangeBorderInMillis = clock.millis() - timeRangeInMillis;
-        accumulatedRequests.removeIf(
-                accumulatedRequestTimeInMillis -> accumulatedRequestTimeInMillis < leftTimeRangeBorderInMillis
+    public void reset() {
+        capturedRequests.clear();
+        lastRequestTimeInMillis = 0L;
+        nextRequestTimeInMillis = 0L;
+    }
+
+    private void recalculateNextRequestTime() {
+        long currentTimeMillis = clock.millis();
+
+        // calculate if amount of requests is exceeded
+        if (capturedRequests.size() >= maximumBandwidth) {
+            long oldestRequestTimeInMillis = capturedRequests.get(0);
+            nextRequestTimeInMillis = oldestRequestTimeInMillis + timeRangeInMillis;
+            return;
+        }
+
+        // calculate if there is a delay and it is not sustained
+        long lastRequestTimePlusDelayInMillis = lastRequestTimeInMillis + delayBetweenRequestsInMillis;
+        if (
+            delayBetweenRequestsInMillis != 0
+                    && lastRequestTimeInMillis != 0L
+                    && lastRequestTimePlusDelayInMillis > currentTimeMillis
+        ) {
+            nextRequestTimeInMillis = lastRequestTimePlusDelayInMillis;
+            return;
+        }
+
+        // next request time is current time if there are not "obstacles"
+        nextRequestTimeInMillis = currentTimeMillis;
+    }
+
+    private void refresh() {
+        long currentTimeMillis = clock.millis();
+
+        if (nextRequestTimeInMillis > currentTimeMillis)
+            return;
+
+        long leftTimeRangeBorderInMillis = currentTimeMillis - timeRangeInMillis;
+        capturedRequests.removeIf(
+                capturedRequestTimeInMillis -> capturedRequestTimeInMillis <= leftTimeRangeBorderInMillis
         );
     }
 
     /**
-     * Clears all accumulated requests
+     * @return estimated time in millis after which another request is possible
      */
-    public void reset() {
-        accumulatedRequests.clear();
-        lastAccumulatedRequestTimeInMillis = 0L;
-    }
-
-    /**
-     * @return available number of requests within the time range
-     */
-    public int availableRequests() {
-        evict();
-
-        return maximumBandwidth - accumulatedRequests.size();
+    public long remainingTimeInMillis() {
+        return Math.max(0L, clock.millis() - nextRequestTimeInMillis);
     }
 
     /**
@@ -65,41 +92,29 @@ public class SingleChannelRateLimiter {
      * @return <b>true</b> if the request is possible
      */
     public boolean canRequest() {
-        if (
-            (delayBetweenRequestsInMillis != 0L)
-                    && (lastAccumulatedRequestTimeInMillis != 0L)
-                    && ((System.currentTimeMillis() - lastAccumulatedRequestTimeInMillis) < delayBetweenRequestsInMillis)
-        )
-            return false;
-
-        return availableRequests() > 0;
+        return nextRequestTimeInMillis <= clock.millis();
     }
 
     /**
-     * Checks whether the request is possible and accumulates request timestamp
+     * Checks whether the request is possible and captures request timestamp
      * 
-     * @return <b>true</b> if the request was accumulated
+     * @return <b>true</b> if the request was captured
      */
     public boolean request() {
         if (!canRequest())
             return false;
-        accumulatedRequests.add(lastAccumulatedRequestTimeInMillis = clock.millis());
+
+        refresh();
+        capturedRequests.add(lastRequestTimeInMillis = clock.millis());
+        recalculateNextRequestTime();
+
         return true;
     }
 
-    /**
-     * @return {@link Builder SingeChannelRateLimiter.Builder}
-     */
     public static Builder builder() {
         return new Builder();
     }
 
-    /**
-     * Builds SingeChannelRateLimiter with {@link #maximumBandwidth}=<b>5</b>, {@link #timeRangeInMillis}=<b>1000</b> and
-     * {@link #accumulatedRequests requestAccumulator}=<b>LinkedList</b>
-     * 
-     * @return {@link SingleChannelRateLimiter SingleChannelRateLimiter with default settings}
-     */
     public static SingleChannelRateLimiter buildDefault() {
         return builder().build();
     }
@@ -112,7 +127,7 @@ public class SingleChannelRateLimiter {
         private int                  maximumBandwidth             = 5;
         private long                 timeRangeInMillis            = 1000;
         private long                 delayBetweenRequestsInMillis = 0;
-        private Supplier<List<Long>> requestAccumulatorSupplier   = LinkedList::new;
+        private Supplier<List<Long>> requestStorageSupplier       = LinkedList::new;
 
         /**
          * @param clock - time source used for the limiter
@@ -165,11 +180,11 @@ public class SingleChannelRateLimiter {
         }
 
         /**
-         * @param requestAccumulatorSupplier - supplier of the list used to accumulate requests
+         * @param requestStorageSupplier - supplier of the list used to capture requests
          * @return {@link Builder}
          */
-        public Builder useRequestAccumulator(Supplier<List<Long>> requestAccumulatorSupplier) {
-            return requestAccumulatorSupplier(requestAccumulatorSupplier);
+        public Builder useRequestStorage(Supplier<List<Long>> requestStorageSupplier) {
+            return requestStorageSupplier(requestStorageSupplier);
         }
 
         /**
@@ -181,7 +196,7 @@ public class SingleChannelRateLimiter {
                     maximumBandwidth,
                     timeRangeInMillis,
                     delayBetweenRequestsInMillis,
-                    requestAccumulatorSupplier.get()
+                    requestStorageSupplier.get()
             );
         }
 
