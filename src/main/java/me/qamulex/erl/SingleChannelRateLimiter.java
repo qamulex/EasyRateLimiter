@@ -19,71 +19,72 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-@Getter
 public class SingleChannelRateLimiter {
 
+    @Getter
     private final Clock clock;
+    @Getter
     private final int   maximumBandwidth;
+    @Getter
     private final long  timeRangeInMillis;
+    @Getter
     private final long  delayBetweenRequestsInMillis;
 
-    @Getter(AccessLevel.PRIVATE)
-    private final List<Long> capturedRequests;
-    @Getter(AccessLevel.PRIVATE)
-    private long             lastRequestTimeInMillis = 0L;
-    private long             nextRequestTimeInMillis = 0L;
+    private final List<Long> capturedTimestamps;
+    private long             lastRequestTimestamp = 0L;
+    private long             nextRequestTimestamp = 0L;
 
     /**
-     * Clears all captured requests
+     * Clears all captured timestamps
      */
     public void reset() {
-        capturedRequests.clear();
-        lastRequestTimeInMillis = 0L;
-        nextRequestTimeInMillis = 0L;
+        capturedTimestamps.clear();
+        lastRequestTimestamp = 0L;
+        nextRequestTimestamp = 0L;
     }
 
     private void recalculateNextRequestTime() {
         long currentTimeMillis = clock.millis();
 
         // calculate if amount of requests is exceeded
-        if (capturedRequests.size() >= maximumBandwidth) {
-            long oldestRequestTimeInMillis = capturedRequests.get(0);
-            nextRequestTimeInMillis = oldestRequestTimeInMillis + timeRangeInMillis;
+        if (capturedTimestamps.size() >= maximumBandwidth) {
+            long oldestTimestamp = capturedTimestamps.get(0);
+            nextRequestTimestamp = oldestTimestamp + timeRangeInMillis;
             return;
         }
 
         // calculate if there is a delay and it is not sustained
-        long lastRequestTimePlusDelayInMillis = lastRequestTimeInMillis + delayBetweenRequestsInMillis;
+        long lastRequestTimePlusDelayInMillis = lastRequestTimestamp + delayBetweenRequestsInMillis;
         if (
             delayBetweenRequestsInMillis != 0
-                    && lastRequestTimeInMillis != 0L
+                    && lastRequestTimestamp != 0L
                     && lastRequestTimePlusDelayInMillis > currentTimeMillis
         ) {
-            nextRequestTimeInMillis = lastRequestTimePlusDelayInMillis;
+            nextRequestTimestamp = lastRequestTimePlusDelayInMillis;
             return;
         }
 
         // next request time is current time if there are not "obstacles"
-        nextRequestTimeInMillis = currentTimeMillis;
+        nextRequestTimestamp = currentTimeMillis;
     }
 
     private void refresh() {
         long currentTimeMillis = clock.millis();
 
-        if (nextRequestTimeInMillis > currentTimeMillis)
+        if (nextRequestTimestamp > currentTimeMillis)
             return;
 
         long leftTimeRangeBorderInMillis = currentTimeMillis - timeRangeInMillis;
-        capturedRequests.removeIf(
-                capturedRequestTimeInMillis -> capturedRequestTimeInMillis <= leftTimeRangeBorderInMillis
+        capturedTimestamps.removeIf(
+                capturedTimestamp -> capturedTimestamp <= leftTimeRangeBorderInMillis
         );
     }
 
     /**
      * @return estimated time in millis after which another request is possible
      */
-    public long remainingTimeInMillis() {
-        return Math.max(0L, clock.millis() - nextRequestTimeInMillis);
+    public long remainingTimeInMillis() { // TODO: rename method
+        return Math.max(0L, nextRequestTimestamp - clock.millis());
     }
 
     /**
@@ -92,7 +93,7 @@ public class SingleChannelRateLimiter {
      * @return <b>true</b> if the request is possible
      */
     public boolean canRequest() {
-        return nextRequestTimeInMillis <= clock.millis();
+        return nextRequestTimestamp <= clock.millis();
     }
 
     /**
@@ -105,7 +106,7 @@ public class SingleChannelRateLimiter {
             return false;
 
         refresh();
-        capturedRequests.add(lastRequestTimeInMillis = clock.millis());
+        capturedTimestamps.add(lastRequestTimestamp = clock.millis());
         recalculateNextRequestTime();
 
         return true;
@@ -180,7 +181,7 @@ public class SingleChannelRateLimiter {
         }
 
         /**
-         * @param requestStorageSupplier - supplier of the list used to capture requests
+         * @param requestStorageSupplier - supplier of the list used to capture request timestamps
          * @return {@link Builder}
          */
         public Builder useRequestStorage(Supplier<List<Long>> requestStorageSupplier) {
