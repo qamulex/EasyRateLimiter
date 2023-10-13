@@ -34,9 +34,9 @@ public class RateLimiterMap<T> implements Map<T, RateLimiter> {
 
     @Override
     public RateLimiter get(Object key) {
-        return map.compute(
+        return map.computeIfAbsent(
                 (T) key, // TODO: don't know how to check this cast
-                (ignored1, ignored2) -> rateLimiterBuilder.build()
+                ignored -> rateLimiterBuilder.build()
         );
     }
 
