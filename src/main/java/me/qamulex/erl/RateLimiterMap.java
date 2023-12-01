@@ -33,9 +33,10 @@ public class RateLimiterMap<T> implements Map<T, RateLimiter> {
     }
 
     @Override
+    @SuppressWarnings({ "unchecked" })
     public RateLimiter get(Object key) {
         return map.computeIfAbsent(
-                (T) key, // TODO: don't know how to check this cast
+                (T) key,
                 ignored -> rateLimiterBuilder.build()
         );
     }

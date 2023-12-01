@@ -14,7 +14,7 @@ repositories {
 }
 
 dependencies {
-    implementation "me.qamulex:easyratelimiter:2.0.1"
+    implementation "me.qamulex:easyratelimiter:2.0.2"
 }
 ```
 
@@ -32,7 +32,7 @@ dependencies {
     <dependency>
         <groupId>me.qamulex</groupId>
         <artifactId>easyratelimiter</artifactId>
-        <version>2.0.1</version>
+        <version>2.0.2</version>
         <scope>compile</scope>
     </dependency>
 </dependencies>
@@ -79,7 +79,7 @@ The `RateLimiter` instance can be used via the method `request()` that returns *
 Multi-channel variant of rate limiter can be built using method `RateLimiterBuilder#buildMap()`:
 
 ```java
-Map<T, RateLimiter> limiters = RateLimiterBuilder.newBuilder()
+RateLimiterMap<T> limiters = RateLimiterBuilder.newBuilder()
         // ...
         .buildMap();
 ```

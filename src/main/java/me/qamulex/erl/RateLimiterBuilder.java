@@ -1,6 +1,7 @@
 package me.qamulex.erl;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -60,6 +61,14 @@ public class RateLimiterBuilder {
     }
 
     /**
+     * @param duration - affected time range
+     * @return {@link RateLimiterBuilder}
+     */
+    public RateLimiterBuilder setAffectedTimeRange(Duration duration) {
+        return setAffectedTimeRange(duration.toMillis());
+    }
+
+    /**
      * @param timeInMillis - delay between requests in millis (0 - disabled)
      * @return {@link RateLimiterBuilder}
      */
@@ -74,6 +83,14 @@ public class RateLimiterBuilder {
      */
     public RateLimiterBuilder setDelayBetweenRequests(long time, TimeUnit unit) {
         return setDelayBetweenRequests(unit.toMillis(time));
+    }
+
+    /**
+     * @param duration - delay between requests
+     * @return {@link RateLimiterBuilder}
+     */
+    public RateLimiterBuilder setDelayBetweenRequests(Duration duration) {
+        return delayBetweenRequestsInMillis(duration.toMillis());
     }
 
     /**
@@ -108,11 +125,11 @@ public class RateLimiterBuilder {
         );
     }
 
-    public <T> Map<T, RateLimiter> buildMap(Map<T, RateLimiter> mapImplementation) {
-        return new RateLimiterMap<>(this, mapImplementation);
+    public <T> RateLimiterMap<T> buildMap(Map<T, RateLimiter> mapInstance) {
+        return new RateLimiterMap<>(this, mapInstance);
     }
 
-    public <T> Map<T, RateLimiter> buildMap() {
+    public <T> RateLimiterMap<T> buildMap() {
         return buildMap(new HashMap<>());
     }
 
