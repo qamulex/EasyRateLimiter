@@ -41,11 +41,19 @@ dependencies {
 ## Basic usage
 
 ```java
+// delay limiter
+
 RateLimiter delayLimiter = RateLimiterBuilder.newBuilder()
         .setMaximumBandwidth(1)
         .setAffectedTimeRange(100, TimeUnit.MILLISECONDS)
         .setDelayBetweenRequests(0)
         .build();
+
+System.out.println(delayLimiter.request());    // true
+System.out.println(delayLimiter.canRequest()); // false
+```
+```java
+// bandwidth limiter
 
 RateLimiter bandwidthLimiter = RateLimiterBuilder.newBuilder()
         .setMaximumBandwidth(5)
@@ -53,22 +61,38 @@ RateLimiter bandwidthLimiter = RateLimiterBuilder.newBuilder()
         .setDelayBetweenRequests(0)
         .build();
 
+for (int i = 0; i < 5; i++)
+    System.out.println(bandwidthLimiter.request()); // true x5
+System.out.println(bandwidthLimiter.canRequest());  // false
+```
+```java
+// bandwidth limiter with delay between requests
+
 RateLimiter bandwidthLimiterWithDelay = RateLimiterBuilder.newBuilder()
         .setMaximumBandwidth(5)
         .setAffectedTimeRange(1, TimeUnit.SECONDS)
         .setDelayBetweenRequests(100, TimeUnit.MILLISECONDS)
         .build();
+
+for (int i = 0; i < 5; i++)
+    System.out.println(bandwidthLimiterWithDelay.request()); // true x1 then false x4
+System.out.println(bandwidthLimiterWithDelay.canRequest());  // false
+Thread.sleep(100);
+System.out.println(bandwidthLimiterWithDelay.canRequest());  // true
 ```
 
 ### `RateLimiterBuilder` methods
 | builder method | meaning |
 | - | - |
+| `static newBuilder()` | constructs a new RateLimiterBuilder instance with default parameters |
 | `useClock(Clock)` | time source used for the limiter calculations |
 | `setMaximumBandwidth(int)` | sets maximum number of requests within a time range |
-| `setAffectedTimeRange(long, TimeUnit)` | sets affected time range in the specified time unit |
 | `setAffectedTimeRange(long)` | sets affected time range in millis |
-| `setDelayBetweenRequests(long, TimeUnit)` | sets delay between requests in the specified time unit |
+| `setAffectedTimeRange(long, TimeUnit)` | sets affected time range in the specified time unit |
+| `setAffectedTimeRange(Duration)` | sets affected time range from the specified duration |
 | `setDelayBetweenRequests(long)` | sets delay between requests in millis |
+| `setDelayBetweenRequests(long, TimeUnit)` | sets delay between requests in the specified time unit |
+| `setDelayBetweenRequests(Duration)` | sets delay between requests from the specified duration |
 | `useCapturedTimestampsStorage(Supplier<List<Long>>)` | sets supplier of the list used to capture request timestamps |
 | `build()` | builds an instance of `RateLimiter` |
 
