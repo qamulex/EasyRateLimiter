@@ -42,7 +42,6 @@ dependencies {
 
 ```java
 // delay limiter
-
 RateLimiter delayLimiter = RateLimiterBuilder.newBuilder()
         .setMaximumBandwidth(1)
         .setAffectedTimeRange(100, TimeUnit.MILLISECONDS)
@@ -54,7 +53,6 @@ System.out.println(delayLimiter.canRequest()); // false
 ```
 ```java
 // bandwidth limiter
-
 RateLimiter bandwidthLimiter = RateLimiterBuilder.newBuilder()
         .setMaximumBandwidth(5)
         .setAffectedTimeRange(1, TimeUnit.SECONDS)
@@ -67,7 +65,6 @@ System.out.println(bandwidthLimiter.canRequest());  // false
 ```
 ```java
 // bandwidth limiter with delay between requests
-
 RateLimiter bandwidthLimiterWithDelay = RateLimiterBuilder.newBuilder()
         .setMaximumBandwidth(5)
         .setAffectedTimeRange(1, TimeUnit.SECONDS)
@@ -95,6 +92,8 @@ System.out.println(bandwidthLimiterWithDelay.canRequest());  // true
 | `setDelayBetweenRequests(Duration)` | sets delay between requests from the specified duration |
 | `useCapturedTimestampsStorage(Supplier<List<Long>>)` | sets supplier of the list used to capture request timestamps |
 | `build()` | builds an instance of `RateLimiter` |
+| `buildMap(Map<K, RateLimiter>)` | builds an instance of `RateLimiterMap<K>` with the specified underlying map instance |
+| `buildMap()` | builds an instance of `RateLimiterMap<K>` with `HashMap<K, RateLimiter>` as underlying map instance |
 
 The `RateLimiter` instance can be used via the method `request()` that returns **true** when the request is allowed. Another method called `canRequest()` indicates whether the next call to `request()` will be **true** or not.
 
@@ -103,7 +102,7 @@ The `RateLimiter` instance can be used via the method `request()` that returns *
 Multi-channel variant of rate limiter can be built using method `RateLimiterBuilder#buildMap()`:
 
 ```java
-RateLimiterMap<T> limiters = RateLimiterBuilder.newBuilder()
+RateLimiterMap<K> limiters = RateLimiterBuilder.newBuilder()
         // ...
         .buildMap();
 ```
