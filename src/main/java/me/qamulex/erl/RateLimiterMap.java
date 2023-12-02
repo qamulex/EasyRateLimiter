@@ -7,10 +7,10 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class RateLimiterMap<T> implements Map<T, RateLimiter> {
+public class RateLimiterMap<K> implements Map<K, RateLimiter> {
 
     private final RateLimiterBuilder  rateLimiterBuilder;
-    private final Map<T, RateLimiter> map;
+    private final Map<K, RateLimiter> map;
 
     @Override
     public void clear() {
@@ -28,7 +28,7 @@ public class RateLimiterMap<T> implements Map<T, RateLimiter> {
     }
 
     @Override
-    public Set<Entry<T, RateLimiter>> entrySet() {
+    public Set<Entry<K, RateLimiter>> entrySet() {
         return map.entrySet();
     }
 
@@ -36,7 +36,7 @@ public class RateLimiterMap<T> implements Map<T, RateLimiter> {
     @SuppressWarnings({ "unchecked" })
     public RateLimiter get(Object key) {
         return map.computeIfAbsent(
-                (T) key,
+                (K) key,
                 ignored -> rateLimiterBuilder.build()
         );
     }
@@ -47,17 +47,17 @@ public class RateLimiterMap<T> implements Map<T, RateLimiter> {
     }
 
     @Override
-    public Set<T> keySet() {
+    public Set<K> keySet() {
         return map.keySet();
     }
 
     @Override
-    public RateLimiter put(T key, RateLimiter value) {
+    public RateLimiter put(K key, RateLimiter value) {
         return map.put(key, value);
     }
 
     @Override
-    public void putAll(Map<? extends T, ? extends RateLimiter> m) {
+    public void putAll(Map<? extends K, ? extends RateLimiter> m) {
         throw new UnsupportedOperationException();
     }
 

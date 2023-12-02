@@ -125,11 +125,11 @@ public class RateLimiterBuilder {
         );
     }
 
-    public <T> RateLimiterMap<T> buildMap(Map<T, RateLimiter> mapInstance) {
+    public <K> RateLimiterMap<K> buildMap(Map<K, RateLimiter> mapInstance) {
         return new RateLimiterMap<>(this, mapInstance);
     }
 
-    public <T> RateLimiterMap<T> buildMap() {
+    public <K> RateLimiterMap<K> buildMap() {
         return buildMap(new HashMap<>());
     }
 
