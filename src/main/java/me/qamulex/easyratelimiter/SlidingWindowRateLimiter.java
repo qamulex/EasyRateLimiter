@@ -5,21 +5,15 @@
  */
 package me.qamulex.easyratelimiter;
 
-public class SlidingWindowRateLimiter extends ClockDependentRateLimiter {
+public class SlidingWindowRateLimiter extends WindowBasedRateLimiter {
 
     private final long[] window;
-    private final long   windowSizeMillis;
     private final int    lastWindowSlotIndex;
 
-    public SlidingWindowRateLimiter(int quota, long windowSizeMillis) {
-        if (quota <= 1)
-            throw new IllegalArgumentException("maxRequests must be greater than 1");
-        if (windowSizeMillis <= 0)
-            throw new IllegalArgumentException("windowSizeMillis must be greater than 0");
-
-        window = new long[quota];
-        this.windowSizeMillis = windowSizeMillis;
-        lastWindowSlotIndex = quota - 1;
+    public SlidingWindowRateLimiter(int maxQuota, long windowSizeMillis) {
+        super(maxQuota, windowSizeMillis);
+        window = new long[maxQuota];
+        lastWindowSlotIndex = maxQuota - 1;
     }
 
     private long getOldestTimestamp() {
@@ -34,7 +28,7 @@ public class SlidingWindowRateLimiter extends ClockDependentRateLimiter {
             return 0;
 
         long elapsed = currentTimeMillis() - oldest;
-        long remaining = windowSizeMillis - elapsed;
+        long remaining = getWindowSizeMillis() - elapsed;
 
         return Math.max(0, remaining);
     }
@@ -46,7 +40,7 @@ public class SlidingWindowRateLimiter extends ClockDependentRateLimiter {
 
     private boolean isRequestAllowed(long timeMillis) {
         return getOldestTimestamp() == 0
-                || (timeMillis - getOldestTimestamp()) >= windowSizeMillis;
+                || (timeMillis - getOldestTimestamp()) >= getWindowSizeMillis();
     }
 
     @Override
