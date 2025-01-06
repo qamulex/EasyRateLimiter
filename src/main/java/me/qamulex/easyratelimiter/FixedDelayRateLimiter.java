@@ -29,7 +29,7 @@ public class FixedDelayRateLimiter extends ClockDependentRateLimiter {
 
     @Override
     protected long getTimeUntilNextRequest(long timeMillis) {
-        return nextRequestTime - timeMillis;
+        return Math.max(0, nextRequestTime - timeMillis);
     }
 
     @Override
@@ -51,6 +51,17 @@ public class FixedDelayRateLimiter extends ClockDependentRateLimiter {
     @Override
     public void reset() {
         nextRequestTime = 0;
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "FixedDelayRateLimiter [delayMillis=%d, nextRequestTime=%d, timeUntilNextRequest=%d]",
+                
+                delayMillis,
+                nextRequestTime,
+                getTimeUntilNextRequest()
+        );
     }
 
 }

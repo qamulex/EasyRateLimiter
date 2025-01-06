@@ -7,11 +7,26 @@ package me.qamulex.easyratelimiter;
 
 public class SlidingWindowRateLimiter extends WindowBasedRateLimiter {
 
-    private long[] window;
-    private int    lastWindowSlotIndex;
+    private long[] window              = new long[0];
+    private int    lastWindowSlotIndex = 0;
 
     public SlidingWindowRateLimiter(int maxQuota, long windowSizeMillis) {
         super(maxQuota, windowSizeMillis);
+    }
+
+    @Override
+    public void setMaxQuota(int maxQuota) {
+        super.setMaxQuota(maxQuota);
+
+        window = new long[maxQuota];
+        lastWindowSlotIndex = maxQuota - 1;
+    }
+
+    @Override
+    public void setWindowSizeMillis(long windowSizeMillis) {
+        super.setWindowSizeMillis(windowSizeMillis);
+
+        reset();
     }
 
     private long getOldestTimestamp() {
@@ -44,8 +59,8 @@ public class SlidingWindowRateLimiter extends WindowBasedRateLimiter {
         if (!isRequestAllowed(now))
             return false;
 
-        for (int i = 1; i < window.length; i++)
-            window[i] = window[i - 1];
+        for (int windowSlotIndex = 1; windowSlotIndex < window.length; windowSlotIndex++)
+            window[windowSlotIndex] = window[windowSlotIndex - 1];
         window[0] = now;
 
         return true;
@@ -53,8 +68,31 @@ public class SlidingWindowRateLimiter extends WindowBasedRateLimiter {
 
     @Override
     public void reset() {
-        window = new long[getMaxQuota()];
-        lastWindowSlotIndex = getMaxQuota() - 1;
+        for (int windowSlotIndex = 0; windowSlotIndex < window.length; windowSlotIndex++)
+            window[windowSlotIndex] = 0;
+    }
+
+    @Override
+    public String toString() {
+        long now = currentTimeMillis();
+
+        int usedQuota = 0;
+        for (int windowSlotIndex = 0; windowSlotIndex <= lastWindowSlotIndex; windowSlotIndex++) {
+            long timestamp = window[windowSlotIndex];
+            long elapsed = now - timestamp;
+            if (elapsed >= getWindowSizeMillis())
+                break;
+            usedQuota++;
+        }
+
+        return String.format(
+                "SlidingWindowRateLimiter [maxQuota=%d, windowSizeMillis=%d, usedQuota=%d, timeUntilNextRequest=%d]",
+
+                getMaxQuota(),
+                getWindowSizeMillis(),
+                usedQuota,
+                getTimeUntilNextRequest()
+        );
     }
 
 }

@@ -38,5 +38,5 @@ public abstract class ClockDependentRateLimiter extends AbstractRateLimiter {
     }
 
     protected abstract boolean isRequestAllowed(long timeMillis);
-    
+
 }

@@ -24,7 +24,6 @@ public abstract class WindowBasedRateLimiter extends ClockDependentRateLimiter {
             throw new IllegalArgumentException("maxQuota must be greater than 1");
 
         this.maxQuota = maxQuota;
-        reset();
     }
 
     public long getWindowSizeMillis() {
@@ -36,7 +35,6 @@ public abstract class WindowBasedRateLimiter extends ClockDependentRateLimiter {
             throw new IllegalArgumentException("windowSizeMillis must be greater than 0");
 
         this.windowSizeMillis = windowSizeMillis;
-        reset();
     }
 
 }

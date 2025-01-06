@@ -14,6 +14,20 @@ public class FixedWindowRateLimiter extends WindowBasedRateLimiter {
         super(maxQuota, windowSizeMillis);
     }
 
+    @Override
+    public void setMaxQuota(int maxQuota) {
+        super.setMaxQuota(maxQuota);
+
+        usedQuota = 0;
+    }
+
+    @Override
+    public void setWindowSizeMillis(long windowSizeMillis) {
+        super.setWindowSizeMillis(windowSizeMillis);
+
+        nextWindowTimeMillis = 0;
+    }
+
     public int getUsedQuota() {
         return usedQuota;
     }
@@ -55,6 +69,19 @@ public class FixedWindowRateLimiter extends WindowBasedRateLimiter {
     public void reset() {
         usedQuota = 0;
         nextWindowTimeMillis = 0;
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "FixedWindowRateLimiter [maxQuota=%d, windowSizeMillis=%d, usedQuota=%d, nextWindowTimeMillis=%d, timeUntilNextRequest=%d]",
+
+                getMaxQuota(),
+                getWindowSizeMillis(),
+                usedQuota,
+                nextWindowTimeMillis,
+                getTimeUntilNextRequest()
+        );
     }
 
 }
