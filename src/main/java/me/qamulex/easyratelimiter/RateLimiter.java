@@ -59,10 +59,7 @@ public interface RateLimiter {
      * @return true if the request was allowed within the specified duration, false otherwise.
      * @throws InterruptedException if the thread is interrupted while waiting.
      */
-    default boolean blockUntilRequestAllowed(Duration duration) throws InterruptedException {
-        return !(duration.isNegative() || duration.isZero())
-                && blockUntilRequestAllowed(duration.toMillis(), TimeUnit.MILLISECONDS);
-    }
+    boolean blockUntilRequestAllowed(Duration duration) throws InterruptedException;
 
     /**
      * Clears all captured timestamps and resets the limiter state.

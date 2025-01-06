@@ -5,6 +5,7 @@
  */
 package me.qamulex.easyratelimiter;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractRateLimiter implements RateLimiter {
@@ -37,6 +38,12 @@ public abstract class AbstractRateLimiter implements RateLimiter {
         }
 
         return true;
+    }
+
+    @Override
+    public boolean blockUntilRequestAllowed(Duration duration) throws InterruptedException {
+        return !(duration.isNegative() || duration.isZero())
+                && blockUntilRequestAllowed(duration.toMillis(), TimeUnit.MILLISECONDS);
     }
 
 }
