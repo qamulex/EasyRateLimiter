@@ -5,23 +5,21 @@
  */
 package me.qamulex.easyratelimiter;
 
-import java.util.concurrent.TimeUnit;
-
-public class SlidingWindowRateLimiter extends NanoTimeBasedRateLimiter {
+public class SlidingWindowRateLimiter extends ClockDependentRateLimiter {
 
     private final long[] window;
-    private final long   windowSizeNanos;
+    private final long   windowSizeMillis;
     private final int    lastWindowSlotIndex;
 
-    public SlidingWindowRateLimiter(int maxRequests, long windowSizeMillis) {
-        if (maxRequests <= 1)
+    public SlidingWindowRateLimiter(int quota, long windowSizeMillis) {
+        if (quota <= 1)
             throw new IllegalArgumentException("maxRequests must be greater than 1");
         if (windowSizeMillis <= 0)
             throw new IllegalArgumentException("windowSizeMillis must be greater than 0");
 
-        window = new long[maxRequests];
-        windowSizeNanos = TimeUnit.MILLISECONDS.toNanos(windowSizeMillis);
-        lastWindowSlotIndex = maxRequests - 1;
+        window = new long[quota];
+        this.windowSizeMillis = windowSizeMillis;
+        lastWindowSlotIndex = quota - 1;
     }
 
     private long getOldestTimestamp() {
@@ -29,31 +27,31 @@ public class SlidingWindowRateLimiter extends NanoTimeBasedRateLimiter {
     }
 
     @Override
-    protected long getNanoTimeUntilNextRequest() {
+    public long getTimeUntilNextRequest() {
         long oldest = getOldestTimestamp();
 
         if (oldest == 0)
             return 0;
 
-        long elapsed = System.nanoTime() - oldest;
-        long remaining = windowSizeNanos - elapsed;
+        long elapsed = currentTimeMillis() - oldest;
+        long remaining = windowSizeMillis - elapsed;
 
         return Math.max(0, remaining);
     }
 
     @Override
     public boolean isRequestAllowed() {
-        return isRequestAllowed(System.nanoTime());
+        return isRequestAllowed(currentTimeMillis());
     }
 
-    private boolean isRequestAllowed(long nanoTime) {
+    private boolean isRequestAllowed(long timeMillis) {
         return getOldestTimestamp() == 0
-                || (nanoTime - getOldestTimestamp()) >= windowSizeNanos;
+                || (timeMillis - getOldestTimestamp()) >= windowSizeMillis;
     }
 
     @Override
     public boolean tryRequest() {
-        long now = System.nanoTime();
+        long now = currentTimeMillis();
 
         if (!isRequestAllowed(now))
             return false;

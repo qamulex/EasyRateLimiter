@@ -5,46 +5,44 @@
  */
 package me.qamulex.easyratelimiter;
 
-import java.util.concurrent.TimeUnit;
+public class FixedDelayRateLimiter extends ClockDependentRateLimiter {
 
-public class FixedDelayRateLimiter extends NanoTimeBasedRateLimiter {
+    private final long delayMillis;
 
-    private final long delayNanos;
-
-    private long nextRequestNanoTime = 0;
+    private long nextRequestTime = 0;
 
     public FixedDelayRateLimiter(long delayMillis) {
-        delayNanos = TimeUnit.MILLISECONDS.toNanos(delayMillis);
+        this.delayMillis = delayMillis;
     }
 
     @Override
-    protected long getNanoTimeUntilNextRequest() {
-        return nextRequestNanoTime - System.nanoTime();
+    public long getTimeUntilNextRequest() {
+        return nextRequestTime - currentTimeMillis();
     }
 
     @Override
     public boolean isRequestAllowed() {
-        return isRequestAllowed(System.nanoTime());
+        return isRequestAllowed(currentTimeMillis());
     }
 
-    private boolean isRequestAllowed(long nanoTime) {
-        return nanoTime >= nextRequestNanoTime;
+    private boolean isRequestAllowed(long timeMillis) {
+        return timeMillis >= nextRequestTime;
     }
 
     @Override
     public boolean tryRequest() {
-        long now = System.nanoTime();
+        long now = currentTimeMillis();
 
         if (!isRequestAllowed(now))
             return false;
 
-        nextRequestNanoTime = now + delayNanos;
+        nextRequestTime = now + delayMillis;
         return true;
     }
 
     @Override
     public void reset() {
-        nextRequestNanoTime = 0;
+        nextRequestTime = 0;
     }
 
 }
