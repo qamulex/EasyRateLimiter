@@ -3,11 +3,12 @@
  *
  * Copyright (c) qamulex
  */
-package me.qamulex.easyratelimiter;
+package me.qamulex.easyratelimiter.impl;
 
 import java.time.Clock;
 
 import lombok.NonNull;
+import me.qamulex.easyratelimiter.util.NanoTimeClock;
 
 public abstract class ClockDependentRateLimiter extends AbstractRateLimiter {
 

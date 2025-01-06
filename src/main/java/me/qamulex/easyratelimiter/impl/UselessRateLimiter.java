@@ -3,10 +3,12 @@
  *
  * Copyright (c) qamulex
  */
-package me.qamulex.easyratelimiter;
+package me.qamulex.easyratelimiter.impl;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+
+import me.qamulex.easyratelimiter.RateLimiter;
 
 public class UselessRateLimiter implements RateLimiter {
 

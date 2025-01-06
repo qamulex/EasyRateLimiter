@@ -3,7 +3,7 @@
  *
  * Copyright (c) qamulex
  */
-package me.qamulex.easyratelimiter;
+package me.qamulex.easyratelimiter.util;
 
 import java.time.Clock;
 import java.time.Instant;

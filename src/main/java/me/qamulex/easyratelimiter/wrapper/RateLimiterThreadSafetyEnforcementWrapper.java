@@ -3,12 +3,13 @@
  *
  * Copyright (c) qamulex
  */
-package me.qamulex.easyratelimiter;
+package me.qamulex.easyratelimiter.wrapper;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import lombok.NonNull;
+import me.qamulex.easyratelimiter.RateLimiter;
 
 public class RateLimiterThreadSafetyEnforcementWrapper implements RateLimiter {
 

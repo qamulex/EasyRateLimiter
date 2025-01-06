@@ -3,11 +3,13 @@
  *
  * Copyright (c) qamulex
  */
-package me.qamulex.easyratelimiter;
+package me.qamulex.easyratelimiter.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import me.qamulex.easyratelimiter.RateLimiter;
 
 public class CompositeRateLimiter extends AbstractRateLimiter {
 

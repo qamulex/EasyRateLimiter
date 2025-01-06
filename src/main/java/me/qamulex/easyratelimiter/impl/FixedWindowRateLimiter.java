@@ -3,7 +3,9 @@
  *
  * Copyright (c) qamulex
  */
-package me.qamulex.easyratelimiter;
+package me.qamulex.easyratelimiter.impl;
+
+import me.qamulex.easyratelimiter.util.WindowType;
 
 public class FixedWindowRateLimiter extends WindowBasedRateLimiter {
 

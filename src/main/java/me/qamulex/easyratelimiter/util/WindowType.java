@@ -3,7 +3,7 @@
  *
  * Copyright (c) qamulex
  */
-package me.qamulex.easyratelimiter;
+package me.qamulex.easyratelimiter.util;
 
 public enum WindowType {
     SLIDING,
