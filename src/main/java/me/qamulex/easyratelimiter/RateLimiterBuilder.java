@@ -7,6 +7,9 @@ package me.qamulex.easyratelimiter;
 
 import java.time.Clock;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import lombok.AccessLevel;
@@ -78,7 +81,7 @@ public class RateLimiterBuilder {
         return setEnforceThreadSafety(enforceThreadSafety);
     }
 
-    private RateLimiter buildRateLimiter() {
+    public RateLimiter build() {
         FixedDelayRateLimiter fixedDelayRateLimiter = null;
         if (windowSizeMillis > 0 && maxQuota == 1)
             fixedDelayRateLimiter = new FixedDelayRateLimiter(windowSizeMillis);
@@ -116,8 +119,16 @@ public class RateLimiterBuilder {
         return rateLimiter;
     }
 
-    public RateLimiter build() {
-        return buildRateLimiter();
+    public <K> RateLimiterMap<K> buildMap(@NonNull Map<K, RateLimiter> map) {
+        return new RateLimiterMap<>(this, map);
+    }
+
+    public <K> RateLimiterMap<K> buildMap() {
+        return buildMap(
+                enforceThreadSafety
+                        ? new ConcurrentHashMap<>()
+                        : new HashMap<>()
+        );
     }
 
 }
