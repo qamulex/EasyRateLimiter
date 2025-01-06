@@ -7,13 +7,11 @@ package me.qamulex.easyratelimiter;
 
 public class SlidingWindowRateLimiter extends WindowBasedRateLimiter {
 
-    private final long[] window;
-    private final int    lastWindowSlotIndex;
+    private long[] window;
+    private int    lastWindowSlotIndex;
 
     public SlidingWindowRateLimiter(int maxQuota, long windowSizeMillis) {
         super(maxQuota, windowSizeMillis);
-        window = new long[maxQuota];
-        lastWindowSlotIndex = maxQuota - 1;
     }
 
     private long getOldestTimestamp() {
@@ -21,24 +19,20 @@ public class SlidingWindowRateLimiter extends WindowBasedRateLimiter {
     }
 
     @Override
-    public long getTimeUntilNextRequest() {
+    protected long getTimeUntilNextRequest(long timeMillis) {
         long oldest = getOldestTimestamp();
 
         if (oldest == 0)
             return 0;
 
-        long elapsed = currentTimeMillis() - oldest;
+        long elapsed = timeMillis - oldest;
         long remaining = getWindowSizeMillis() - elapsed;
 
         return Math.max(0, remaining);
     }
 
     @Override
-    public boolean isRequestAllowed() {
-        return isRequestAllowed(currentTimeMillis());
-    }
-
-    private boolean isRequestAllowed(long timeMillis) {
+    protected boolean isRequestAllowed(long timeMillis) {
         return getOldestTimestamp() == 0
                 || (timeMillis - getOldestTimestamp()) >= getWindowSizeMillis();
     }
@@ -59,8 +53,8 @@ public class SlidingWindowRateLimiter extends WindowBasedRateLimiter {
 
     @Override
     public void reset() {
-        for (int i = 0; i < window.length; i++)
-            window[i] = 0;
+        window = new long[getMaxQuota()];
+        lastWindowSlotIndex = getMaxQuota() - 1;
     }
 
 }

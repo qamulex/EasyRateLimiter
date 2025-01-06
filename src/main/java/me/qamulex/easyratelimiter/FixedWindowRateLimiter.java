@@ -14,19 +14,23 @@ public class FixedWindowRateLimiter extends WindowBasedRateLimiter {
         super(maxQuota, windowSizeMillis);
     }
 
+    public int getUsedQuota() {
+        return usedQuota;
+    }
+
+    public long getNextWindowTimeMillis() {
+        return nextWindowTimeMillis;
+    }
+
     @Override
-    public long getTimeUntilNextRequest() {
+    protected long getTimeUntilNextRequest(long timeMillis) {
         return usedQuota < getMaxQuota()
                 ? 0
-                : Math.max(0, nextWindowTimeMillis - currentTimeMillis());
+                : Math.max(0, nextWindowTimeMillis - timeMillis);
     }
 
     @Override
-    public boolean isRequestAllowed() {
-        return isRequestAllowed(currentTimeMillis());
-    }
-
-    private boolean isRequestAllowed(long timeMillis) {
+    protected boolean isRequestAllowed(long timeMillis) {
         return usedQuota < getMaxQuota() || nextWindowTimeMillis <= timeMillis;
     }
 

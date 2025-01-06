@@ -13,16 +13,30 @@ public abstract class ClockDependentRateLimiter extends AbstractRateLimiter {
 
     private Clock clock = new NanoTimeClock();
 
-    protected final Clock getClock() {
+    public Clock getClock() {
         return clock;
     }
 
-    protected final long currentTimeMillis() {
+    protected long currentTimeMillis() {
         return clock.millis();
     }
 
-    public final void setClock(@NonNull Clock clock) {
+    public void setClock(@NonNull Clock clock) {
         this.clock = clock;
     }
+
+    @Override
+    public long getTimeUntilNextRequest() {
+        return getTimeUntilNextRequest(currentTimeMillis());
+    }
+
+    protected abstract long getTimeUntilNextRequest(long timeMillis);
+
+    @Override
+    public boolean isRequestAllowed() {
+        return isRequestAllowed(currentTimeMillis());
+    }
+
+    protected abstract boolean isRequestAllowed(long timeMillis);
     
 }

@@ -7,25 +7,33 @@ package me.qamulex.easyratelimiter;
 
 public class FixedDelayRateLimiter extends ClockDependentRateLimiter {
 
-    private final long delayMillis;
+    private long delayMillis;
 
     private long nextRequestTime = 0;
 
     public FixedDelayRateLimiter(long delayMillis) {
+        setDelayMillis(delayMillis);
+    }
+
+    public long getDelayMillis() {
+        return delayMillis;
+    }
+
+    public void setDelayMillis(long delayMillis) {
+        if (delayMillis <= 0)
+            throw new IllegalArgumentException("delayMillis must be greater than 0");
+
         this.delayMillis = delayMillis;
+        reset();
     }
 
     @Override
-    public long getTimeUntilNextRequest() {
-        return nextRequestTime - currentTimeMillis();
+    protected long getTimeUntilNextRequest(long timeMillis) {
+        return nextRequestTime - timeMillis;
     }
 
     @Override
-    public boolean isRequestAllowed() {
-        return isRequestAllowed(currentTimeMillis());
-    }
-
-    private boolean isRequestAllowed(long timeMillis) {
+    protected boolean isRequestAllowed(long timeMillis) {
         return timeMillis >= nextRequestTime;
     }
 
