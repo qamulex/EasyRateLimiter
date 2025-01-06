@@ -10,6 +10,8 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import lombok.AccessLevel;
@@ -129,6 +131,14 @@ public class RateLimiterBuilder {
                         ? new ConcurrentHashMap<>()
                         : new HashMap<>()
         );
+    }
+
+    public RateLimitingExecutorService buildExecutorService(@NonNull ExecutorService executorService) {
+        return new RateLimitingExecutorService(executorService, build());
+    }
+
+    public RateLimitingExecutorService buildExecutorService() {
+        return buildExecutorService(Executors.newSingleThreadExecutor());
     }
 
 }
