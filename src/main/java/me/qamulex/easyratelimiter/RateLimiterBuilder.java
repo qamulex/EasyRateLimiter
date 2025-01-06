@@ -84,41 +84,57 @@ public class RateLimiterBuilder {
     }
 
     public RateLimiter build() {
-        FixedDelayRateLimiter fixedDelayRateLimiter = null;
-        if (windowSizeMillis > 0 && maxQuota == 1)
-            fixedDelayRateLimiter = new FixedDelayRateLimiter(windowSizeMillis);
-        else if (delayMillis > 0)
-            fixedDelayRateLimiter = new FixedDelayRateLimiter(delayMillis);
+        if (delayMillis == 0 && windowSizeMillis == 0)
+            throw new IllegalStateException("delay or windowSize must be greater than zero");
 
-        WindowBasedRateLimiter windowBasedRateLimiter = null;
-        if (windowSizeMillis > 0 && maxQuota > 1) {
-            if (windowType == WindowType.SLIDING)
-                windowBasedRateLimiter = new SlidingWindowRateLimiter(maxQuota, windowSizeMillis);
-            else if (windowType == WindowType.FIXED)
-                windowBasedRateLimiter = new FixedWindowRateLimiter(maxQuota, windowSizeMillis);
-            else
-                throw new IllegalStateException("unknown window type: " + windowType);
-        }
+        FixedDelayRateLimiter fixedDelayRateLimiter = tryCreateFixedDelayRateLimiter();
+        WindowBasedRateLimiter windowBasedRateLimiter = tryCreateWindowBasedRateLimiter();
 
-        RateLimiter rateLimiter = null;
-        if (fixedDelayRateLimiter != null && windowBasedRateLimiter != null) {
-            rateLimiter = new FixedDelayWindowBasedRateLimiter(fixedDelayRateLimiter, windowBasedRateLimiter);
-        } else if (fixedDelayRateLimiter != null) {
-            rateLimiter = fixedDelayRateLimiter;
-        } else if (windowBasedRateLimiter != null) {
-            rateLimiter = windowBasedRateLimiter;
-        }
-
+        RateLimiter rateLimiter = tryCombineRateLimiters(fixedDelayRateLimiter, windowBasedRateLimiter);
         if (rateLimiter == null)
             return UselessRateLimiter.INSTANCE;
 
-        if (clock != null && rateLimiter instanceof ClockDependentRateLimiter)
+        if (rateLimiter instanceof ClockDependentRateLimiter && clock != null)
             ((ClockDependentRateLimiter) rateLimiter).setClock(clock);
 
         if (enforceThreadSafety)
             rateLimiter = new RateLimiterThreadSafetyEnforcementWrapper(rateLimiter);
 
         return rateLimiter;
+    }
+
+    private FixedDelayRateLimiter tryCreateFixedDelayRateLimiter() {
+        if (windowSizeMillis > 0 && maxQuota == 1)
+            return new FixedDelayRateLimiter(windowSizeMillis);
+        else if (delayMillis > 0)
+            return new FixedDelayRateLimiter(delayMillis);
+
+        return null;
+    }
+
+    private WindowBasedRateLimiter tryCreateWindowBasedRateLimiter() {
+        if (windowSizeMillis > 0 && maxQuota > 1) {
+            if (windowType == WindowType.SLIDING)
+                return new SlidingWindowRateLimiter(maxQuota, windowSizeMillis);
+            else if (windowType == WindowType.FIXED)
+                return new FixedWindowRateLimiter(maxQuota, windowSizeMillis);
+        }
+
+        return null;
+    }
+
+    private RateLimiter tryCombineRateLimiters(
+            FixedDelayRateLimiter fixedDelayRateLimiter,
+            WindowBasedRateLimiter windowBasedRateLimiter
+    ) {
+        if (fixedDelayRateLimiter != null && windowBasedRateLimiter != null)
+            return new FixedDelayWindowBasedRateLimiter(fixedDelayRateLimiter, windowBasedRateLimiter);
+        else if (fixedDelayRateLimiter != null)
+            return fixedDelayRateLimiter;
+        else if (windowBasedRateLimiter != null)
+            return windowBasedRateLimiter;
+
+        return null;
     }
 
     public <K> RateLimiterMap<K> buildMap(@NonNull Map<K, RateLimiter> map) {
