@@ -72,8 +72,4 @@ public interface RateLimiter {
      */
     void reset();
 
-    static RateLimiterBuilder newBuilder() {
-        return new RateLimiterBuilder();
-    }
-
 }

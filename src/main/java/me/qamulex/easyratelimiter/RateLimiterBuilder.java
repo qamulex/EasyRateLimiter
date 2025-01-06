@@ -32,7 +32,13 @@ import me.qamulex.easyratelimiter.wrapper.RateLimitingExecutorService;
 
 @Setter(AccessLevel.PRIVATE)
 @Accessors(chain = true)
-public class RateLimiterBuilder {
+public final class RateLimiterBuilder {
+
+    private RateLimiterBuilder() {}
+
+    public static RateLimiterBuilder newBuilder() {
+        return new RateLimiterBuilder();
+    }
 
     private Clock      clock               = null;
     private long       delayMillis         = 0;
