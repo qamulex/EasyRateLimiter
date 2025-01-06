@@ -11,7 +11,7 @@ import lombok.NonNull;
 
 public abstract class ClockDependentRateLimiter extends AbstractRateLimiter {
 
-    private Clock clock = new NanoTimeClock();
+    private Clock clock = NanoTimeClock.INSTANCE;
 
     public Clock getClock() {
         return clock;

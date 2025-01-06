@@ -15,6 +15,11 @@ public class FixedWindowRateLimiter extends WindowBasedRateLimiter {
     }
 
     @Override
+    public WindowType getWindowType() {
+        return WindowType.FIXED;
+    }
+
+    @Override
     public void setMaxQuota(int maxQuota) {
         super.setMaxQuota(maxQuota);
 

@@ -53,4 +53,9 @@ public class RateLimiterThreadSafetyEnforcementWrapper implements RateLimiter {
         wrappedRateLimiter.reset();
     }
 
+    @Override
+    public String toString() {
+        return String.format("RateLimiterThreadSafetyEnforcementWrapper [wrappedRateLimiter=%s]", wrappedRateLimiter);
+    }
+
 }

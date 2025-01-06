@@ -15,6 +15,8 @@ public abstract class WindowBasedRateLimiter extends ClockDependentRateLimiter {
         setWindowSizeMillis(windowSizeMillis);
     }
 
+    public abstract WindowType getWindowType();
+
     public int getMaxQuota() {
         return maxQuota;
     }

@@ -5,6 +5,8 @@
  */
 package me.qamulex.easyratelimiter;
 
+import java.time.Clock;
+
 import lombok.NonNull;
 
 public class FixedDelayWindowBasedRateLimiter extends ClockDependentRateLimiter {
@@ -18,6 +20,13 @@ public class FixedDelayWindowBasedRateLimiter extends ClockDependentRateLimiter 
     ) {
         this.fixedDelayRateLimiter = fixedDelayRateLimiter;
         this.windowBasedRateLimiter = windowBasedRateLimiter;
+    }
+
+    @Override
+    public void setClock(@NonNull Clock clock) {
+        super.setClock(clock);
+        fixedDelayRateLimiter.setClock(clock);
+        windowBasedRateLimiter.setClock(clock);
     }
 
     @Override
@@ -51,7 +60,7 @@ public class FixedDelayWindowBasedRateLimiter extends ClockDependentRateLimiter 
     public String toString() {
         return String.format(
                 "FixedDelayWindowBasedRateLimiter [%s, %s]",
-     
+
                 fixedDelayRateLimiter,
                 windowBasedRateLimiter
         );

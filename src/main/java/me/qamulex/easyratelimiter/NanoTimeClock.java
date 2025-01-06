@@ -12,6 +12,8 @@ import java.util.concurrent.TimeUnit;
 
 public class NanoTimeClock extends Clock {
 
+    public static final NanoTimeClock INSTANCE = new NanoTimeClock();
+
     @Override
     public ZoneId getZone() {
         throw new UnsupportedOperationException("getZone");
