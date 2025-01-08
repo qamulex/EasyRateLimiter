@@ -39,17 +39,17 @@ public class RateLimiterThreadSafetyEnforcementWrapper implements RateLimiter {
     }
 
     @Override
-    public void blockUntilRequestAllowed() throws InterruptedException {
+    public synchronized void blockUntilRequestAllowed() throws InterruptedException {
         wrappedRateLimiter.blockUntilRequestAllowed();
     }
 
     @Override
-    public boolean blockUntilRequestAllowed(long timeout, TimeUnit unit) throws InterruptedException {
+    public synchronized boolean blockUntilRequestAllowed(long timeout, TimeUnit unit) throws InterruptedException {
         return wrappedRateLimiter.blockUntilRequestAllowed(timeout, unit);
     }
 
     @Override
-    public boolean blockUntilRequestAllowed(Duration duration) throws InterruptedException {
+    public synchronized boolean blockUntilRequestAllowed(Duration duration) throws InterruptedException {
         return wrappedRateLimiter.blockUntilRequestAllowed(duration);
     }
 
