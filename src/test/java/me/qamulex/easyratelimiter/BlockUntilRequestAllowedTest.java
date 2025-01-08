@@ -20,7 +20,7 @@ import me.qamulex.easyratelimiter.impl.SlidingWindowRateLimiter;
 
 class BlockUntilRequestAllowedTest {
 
-    void assertExecutionTimeEquals(long expectedExectionTime, double timeDelta, Executable executable) {
+    void assertExecutionTimeEquals(long expectedExecutionTime, double timeDelta, Executable executable) {
         long startTime = System.nanoTime();
         try {
             executable.execute();
@@ -32,11 +32,11 @@ class BlockUntilRequestAllowedTest {
         long elapsedNanos = endTime - startTime;
         long elapsedMillis = TimeUnit.NANOSECONDS.toMillis(elapsedNanos);
 
-        assertEquals(expectedExectionTime, elapsedMillis, timeDelta);
+        assertEquals(expectedExecutionTime, elapsedMillis, timeDelta);
     }
 
-    void assertExecutionTimeEquals(long expectedExectionTime, Executable executable) {
-        assertExecutionTimeEquals(expectedExectionTime, 20, executable);
+    void assertExecutionTimeEquals(long expectedExecutionTime, Executable executable) {
+        assertExecutionTimeEquals(expectedExecutionTime, 20, executable);
     }
 
     @Test
