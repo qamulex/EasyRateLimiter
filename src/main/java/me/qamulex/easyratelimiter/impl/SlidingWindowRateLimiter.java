@@ -5,12 +5,12 @@
  */
 package me.qamulex.easyratelimiter.impl;
 
+import me.qamulex.easyratelimiter.util.CircularBuffer;
 import me.qamulex.easyratelimiter.util.WindowType;
 
 public class SlidingWindowRateLimiter extends WindowBasedRateLimiter {
 
-    private long[] window              = new long[0];
-    private int    lastWindowSlotIndex = 0;
+    private CircularBuffer<Long> window;
 
     private long nextPossibleRequestTimeMillis = 0;
 
@@ -27,9 +27,7 @@ public class SlidingWindowRateLimiter extends WindowBasedRateLimiter {
     public void setMaxQuota(int maxQuota) {
         super.setMaxQuota(maxQuota);
 
-        window = new long[maxQuota];
-        lastWindowSlotIndex = maxQuota - 1;
-
+        window = new CircularBuffer<>(new Long[maxQuota]);
         nextPossibleRequestTimeMillis = 0;
     }
 
@@ -37,8 +35,7 @@ public class SlidingWindowRateLimiter extends WindowBasedRateLimiter {
         long now = currentTimeMillis();
 
         int usedQuota = 0;
-        for (int windowSlotIndex = 0; windowSlotIndex < window.length; windowSlotIndex++) {
-            long timestamp = window[windowSlotIndex];
+        for (long timestamp : window) {
             if (timestamp == 0 || now - timestamp >= getWindowSizeMillis())
                 break;
             usedQuota++;
@@ -75,22 +72,20 @@ public class SlidingWindowRateLimiter extends WindowBasedRateLimiter {
         if (!isRequestAllowed(now))
             return false;
 
-        for (int windowSlotIndex = 1; windowSlotIndex < window.length; windowSlotIndex++)
-            window[windowSlotIndex] = window[windowSlotIndex - 1];
-        window[0] = now;
+        window.add(now);
 
-        long oldestTimestamp = window[lastWindowSlotIndex];
-        if (oldestTimestamp != 0)
-            nextPossibleRequestTimeMillis = oldestTimestamp + getWindowSizeMillis();
+        if (window.isFull()) {
+            long oldestTimestamp = window.getFirst();
+            if (oldestTimestamp != 0)
+                nextPossibleRequestTimeMillis = oldestTimestamp + getWindowSizeMillis();
+        }
 
         return true;
     }
 
     @Override
     public void reset() {
-        for (int windowSlotIndex = 0; windowSlotIndex < window.length; windowSlotIndex++)
-            window[windowSlotIndex] = 0;
-
+        window.clear();
         nextPossibleRequestTimeMillis = 0;
     }
 
