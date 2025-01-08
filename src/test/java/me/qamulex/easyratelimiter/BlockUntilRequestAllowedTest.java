@@ -5,39 +5,17 @@
  */
 package me.qamulex.easyratelimiter;
 
-import java.util.concurrent.TimeUnit;
-
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import me.qamulex.easyratelimiter.impl.FixedDelayRateLimiter;
 import me.qamulex.easyratelimiter.impl.FixedDelayWindowBasedRateLimiter;
 import me.qamulex.easyratelimiter.impl.FixedWindowRateLimiter;
 import me.qamulex.easyratelimiter.impl.SlidingWindowRateLimiter;
+import me.qamulex.easyratelimiter.util.ExecutionTimeMeasurer;
 
-class BlockUntilRequestAllowedTest {
-
-    void assertExecutionTimeEquals(long expectedExecutionTime, double timeDelta, Executable executable) {
-        long startTime = System.nanoTime();
-        try {
-            executable.execute();
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
-        long endTime = System.nanoTime();
-
-        long elapsedNanos = endTime - startTime;
-        long elapsedMillis = TimeUnit.NANOSECONDS.toMillis(elapsedNanos);
-
-        assertEquals(expectedExecutionTime, elapsedMillis, timeDelta);
-    }
-
-    void assertExecutionTimeEquals(long expectedExecutionTime, Executable executable) {
-        assertExecutionTimeEquals(expectedExecutionTime, 20, executable);
-    }
+class BlockUntilRequestAllowedTest implements ExecutionTimeMeasurer {
 
     @Test
     void testFixedDelayRateLimiter() {

@@ -14,34 +14,19 @@ import java.util.stream.IntStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import me.qamulex.easyratelimiter.util.ExecutionTimeMeasurer;
 import me.qamulex.easyratelimiter.wrapper.RateLimitingExecutorService;
 
-class RateLimitingExecutorServiceTest {
+class RateLimitingExecutorServiceTest implements ExecutionTimeMeasurer {
 
     static final long delayMillis = 100;
     static final int  taskCount   = 10;
 
     RateLimitingExecutorService executorService;
-
-    void assertExecutionTimeEquals(long expectedExecutionTime, double timeDelta, Executable executable) {
-        long startTime = System.nanoTime();
-        try {
-            executable.execute();
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
-        long endTime = System.nanoTime();
-
-        long elapsedNanos = endTime - startTime;
-        long elapsedMillis = TimeUnit.NANOSECONDS.toMillis(elapsedNanos);
-
-        assertEquals(expectedExecutionTime, elapsedMillis, timeDelta);
-    }
 
     @BeforeEach
     void setUp() {
