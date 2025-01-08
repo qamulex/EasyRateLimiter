@@ -21,18 +21,18 @@ import me.qamulex.easyratelimiter.util.CircularBuffer;
 
 class CircularBufferTest {
 
-    private static final int CAPACITY = 5;
+    static final int capacity = 5;
 
-    private CircularBuffer<Integer> buffer;
+    CircularBuffer<Integer> buffer;
 
     @BeforeEach
     void setUp() {
-        buffer = new CircularBuffer<>(CAPACITY);
+        buffer = new CircularBuffer<>(capacity);
     }
 
     @Test
     void testInitialState() {
-        assertEquals(CAPACITY, buffer.capacity());
+        assertEquals(capacity, buffer.capacity());
         assertEquals(0, buffer.size());
         assertTrue(buffer.isEmpty());
         assertFalse(buffer.isFull());
@@ -51,22 +51,22 @@ class CircularBufferTest {
 
     @Test
     void testBufferFull() {
-        for (int i = 1; i <= CAPACITY; i++)
+        for (int i = 1; i <= capacity; i++)
             buffer.add(i);
 
-        assertEquals(CAPACITY, buffer.size());
+        assertEquals(capacity, buffer.size());
         assertTrue(buffer.isFull());
     }
 
     @Test
     void testBufferOverwrite() {
-        for (int i = 1; i <= CAPACITY * 2; i++)
+        for (int i = 1; i <= capacity * 2; i++)
             buffer.add(i);
 
-        assertEquals(CAPACITY, buffer.size());
+        assertEquals(capacity, buffer.size());
         assertTrue(buffer.isFull());
-        assertEquals(CAPACITY + 1, buffer.getFirst());
-        assertEquals(CAPACITY * 2, buffer.getLast());
+        assertEquals(capacity + 1, buffer.getFirst());
+        assertEquals(capacity * 2, buffer.getLast());
     }
 
     @Test
