@@ -19,6 +19,10 @@ public class RateLimiterThreadSafetyEnforcementWrapper implements RateLimiter {
         this.wrappedRateLimiter = wrappedRateLimiter;
     }
 
+    public RateLimiter getWrappedRateLimiter() {
+        return wrappedRateLimiter;
+    }
+
     @Override
     public synchronized long getTimeUntilNextRequest() {
         return wrappedRateLimiter.getTimeUntilNextRequest();
