@@ -5,6 +5,7 @@
  */
 package me.qamulex.easyratelimiter.util;
 
+import java.time.Clock;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -14,6 +15,10 @@ import me.qamulex.easyratelimiter.impl.ClockDependentRateLimiter;
 public class ClockDependentRateLimiterTestBase {
 
     private final ControllableClock clock = new ControllableClock();
+
+    protected Clock getClock() {
+        return clock;
+    }
 
     protected long getTime() {
         return clock.millis();
