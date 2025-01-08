@@ -1,10 +1,17 @@
-package me.qamulex.erl;
+/*
+ * Created on Jan 07, 2025
+ *
+ * Copyright (c) qamulex
+ */
+package me.qamulex.easyratelimiter.wrapper;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
 import lombok.RequiredArgsConstructor;
+import me.qamulex.easyratelimiter.RateLimiter;
+import me.qamulex.easyratelimiter.RateLimiterBuilder;
 
 @RequiredArgsConstructor
 public class RateLimiterMap<K> implements Map<K, RateLimiter> {
@@ -33,7 +40,7 @@ public class RateLimiterMap<K> implements Map<K, RateLimiter> {
     }
 
     @Override
-    @SuppressWarnings({ "unchecked" })
+    @SuppressWarnings("unchecked")
     public RateLimiter get(Object key) {
         return map.computeIfAbsent(
                 (K) key,

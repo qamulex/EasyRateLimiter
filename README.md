@@ -14,7 +14,7 @@ repositories {
 }
 
 dependencies {
-    implementation "me.qamulex:easyratelimiter:2.0.2"
+    implementation "me.qamulex:easyratelimiter:3.0"
 }
 ```
 
@@ -32,85 +32,157 @@ dependencies {
     <dependency>
         <groupId>me.qamulex</groupId>
         <artifactId>easyratelimiter</artifactId>
-        <version>2.0.2</version>
+        <version>3.0</version>
         <scope>compile</scope>
     </dependency>
 </dependencies>
 ```
 
-## Basic usage
+## Usage
+
+### Fixed Delay
 
 ```java
-// delay limiter
-RateLimiter delayLimiter = RateLimiterBuilder.newBuilder()
-        .setMaximumBandwidth(1)
-        .setAffectedTimeRange(100, TimeUnit.MILLISECONDS)
-        .setDelayBetweenRequests(0)
+RateLimiter rateLimiter = RateLimiterBuilder.newBuilder()
+        .withDelay(100, TimeUnit.MILLISECONDS)
         .build();
 
-System.out.println(delayLimiter.request());    // true
-System.out.println(delayLimiter.canRequest()); // false
-```
-```java
-// bandwidth limiter
-RateLimiter bandwidthLimiter = RateLimiterBuilder.newBuilder()
-        .setMaximumBandwidth(5)
-        .setAffectedTimeRange(1, TimeUnit.SECONDS)
-        .setDelayBetweenRequests(0)
-        .build();
-
-for (int i = 0; i < 5; i++)
-    System.out.println(bandwidthLimiter.request()); // true x5
-System.out.println(bandwidthLimiter.canRequest());  // false
-```
-```java
-// bandwidth limiter with delay between requests
-RateLimiter bandwidthLimiterWithDelay = RateLimiterBuilder.newBuilder()
-        .setMaximumBandwidth(5)
-        .setAffectedTimeRange(1, TimeUnit.SECONDS)
-        .setDelayBetweenRequests(100, TimeUnit.MILLISECONDS)
-        .build();
-
-for (int i = 0; i < 5; i++)
-    System.out.println(bandwidthLimiterWithDelay.request()); // true x1 then false x4
-System.out.println(bandwidthLimiterWithDelay.canRequest());  // false
+System.out.println(rateLimiter.tryRequest());       // true
+System.out.println(rateLimiter.isRequestAllowed()); // false
 Thread.sleep(100);
-System.out.println(bandwidthLimiterWithDelay.canRequest());  // true
+System.out.println(rateLimiter.isRequestAllowed()); // true
 ```
 
-### `RateLimiterBuilder` methods
-| builder method | meaning |
-| - | - |
-| `static newBuilder()` | constructs a new RateLimiterBuilder instance with default parameters |
-| `useClock(Clock)` | time source used for the limiter calculations |
-| `setMaximumBandwidth(int)` | sets maximum number of requests within a time range |
-| `setAffectedTimeRange(long)` | sets affected time range in millis |
-| `setAffectedTimeRange(long, TimeUnit)` | sets affected time range in the specified time unit |
-| `setAffectedTimeRange(Duration)` | sets affected time range from the specified duration |
-| `setDelayBetweenRequests(long)` | sets delay between requests in millis |
-| `setDelayBetweenRequests(long, TimeUnit)` | sets delay between requests in the specified time unit |
-| `setDelayBetweenRequests(Duration)` | sets delay between requests from the specified duration |
-| `useCapturedTimestampsStorage(Supplier<List<Long>>)` | sets supplier of the list used to capture request timestamps |
-| `build()` | builds an instance of `RateLimiter` |
-| `buildMap(Map<K, RateLimiter>)` | builds an instance of `RateLimiterMap<K>` with the specified underlying map instance |
-| `buildMap()` | builds an instance of `RateLimiterMap<K>` with `HashMap<K, RateLimiter>` as underlying map instance |
-
-The `RateLimiter` instance can be used via the method `request()` that returns **true** when the request is allowed. Another method called `canRequest()` indicates whether the next call to `request()` will be **true** or not.
-
-## Multi-channel usage
-
-Multi-channel variant of rate limiter can be built using method `RateLimiterBuilder#buildMap()`:
+### Window-Based
 
 ```java
-RateLimiterMap<K> limiters = RateLimiterBuilder.newBuilder()
-        // ...
+// fixed window strategy
+RateLimiter fwRateLimiter = RateLimiterBuilder.newBuilder()
+        .withWindowSize(1, TimeUnit.SECONDS)
+        .withMaxQuota(5)
+        .useFixedWindow()
+        .build();
+
+for (int i = 0; i < 5; i++) 
+    System.out.println(fwRateLimiter.tryRequest()); // true x5
+System.out.println(fwRateLimiter.tryRequest());     // false
+Thread.sleep(1000);
+System.out.println(fwRateLimiter.tryRequest());     // true
+
+// sliding window strategy
+RateLimiter swRateLimiter = RateLimiterBuilder.newBuilder()
+        .withWindowSize(500, TimeUnit.MILLISECONDS)
+        .withMaxQuota(5)
+        .useSlidingWindow() // used by default
+        .build();
+
+for (int i = 0; i < 5; i++)
+    System.out.println(swRateLimiter.tryRequest()); // true x5
+System.out.println(swRateLimiter.tryRequest());     // false
+Thread.sleep(500);
+System.out.println(swRateLimiter.tryRequest());     // true
+
+swRateLimiter.reset();
+for (int i = 0; i < 10; i++) {
+    System.out.println(swRateLimiter.tryRequest()); // true x10
+    Thread.sleep(150);
+}
+```
+### Combination: Fixed Delay + Window-Based
+
+```java
+RateLimiter rateLimiter = RateLimiterBuilder.newBuilder()
+        .withDelay(100, TimeUnit.MILLISECONDS)
+        .withWindowSize(1, TimeUnit.SECONDS)
+        .withMaxQuota(5)
+        .build();
+
+for (int i = 0; i < 5; i++)
+    System.out.println(rateLimiter.tryRequest());   // true x1 then false x4
+rateLimiter.reset();
+for (int i = 0; i < 5; i++) {
+    Thread.sleep(100);
+    System.out.println(rateLimiter.tryRequest());   // true x5
+}
+System.out.println(rateLimiter.isRequestAllowed()); // false
+Thread.sleep(600);
+System.out.println(rateLimiter.isRequestAllowed()); // true
+```
+
+### "Multi-channel" - Map<T, RateLimiter>
+
+```java
+RateLimiterMap<String> limiters = RateLimiterBuilder.newBuilder()
+        .withWindowSize(1, TimeUnit.SECONDS)
+        .withMaxQuota(5)
         .buildMap();
+
+String userId = "...";
+if (!limiters.get(userId).tryRequest()) {
+    // ban user
+}
 ```
 
-Created map then can be used for rate limiting like this:
+Alternatively, you can provide a custom map implementation as an argument:
 
 ```java
-Object someObject = ...;
-
-boolean requestIsAllowed = limiters.get(someObject).request();
+RateLimiterMap<String> limiters = RateLimiterBuilder.newBuilder()
+        .withWindowSize(1, TimeUnit.SECONDS)
+        .withMaxQuota(5)
+        .buildMap(new ConcurrentHashMap<>());
 ```
+
+### ExecutorService with rate limiting
+
+```java
+ExecutorService executorService = RateLimiterBuilder.newBuilder()
+        .withDelay(50, TimeUnit.MILLISECONDS)
+        .withWindowSize(200, TimeUnit.MILLISECONDS)
+        .withQuota(2)
+        .buildExecutorService();
+
+for (int i = 0; i < 8; i++) {
+    executorService.submit(() -> {
+        System.out.println(i);
+    });
+}
+```
+Output: 
+```log
+[  0 ms] 0
+[ 50 ms] 1
+[200 ms] 2
+[250 ms] 3
+[400 ms] 4
+[450 ms] 5
+[600 ms] 6
+[650 ms] 7
+```
+
+## API Overview
+
+### `RateLimiter` Methods
+| Method | Description |
+|-|-|
+| `getTimeUntilNextRequest()` | Returns the estimated time until the next request is allowed. |
+| `isRequestAllowed()` | Checks if a request is currently allowed. |
+| `tryRequest()` | Attempts to perform a request without blocking. |
+| `blockUntilRequestAllowed()` | Blocks until a request is allowed. |
+| `blockUntilRequestAllowed(long, TimeUnit)` | Blocks for a maximum time until a request is allowed. |
+| `reset()` | Resets the limiter state. |
+
+### `RateLimiterBuilder` Methods
+| Method | Description |
+|-|-|
+| `static newBuilder()` | Creates a new builder instance. |
+| `withDelay(long, TimeUnit)` | Configures the delay between requests. |
+| `withWindowSize(long, TimeUnit)` | Configures the size of the time window. |
+| `withMaxQuota(int)` | Configures the maximum number of requests within window. |
+| `useFixedWindow()` | Configures to use fixed time window strategy. |
+| `useSlidingWindow()` | Configures to use sliding time window strategy. |
+| `enforceThreadSafety(boolean)` | Enables/disables thread-safety enforcement. |
+| `build()` | Builds a `RateLimiter` instance. |
+| `<K> buildMap()` | Builds a `RateLimiterMap<K>` for multi-channel limiting. |
+| `<K> buildMap(Map<K, RateLimiter>)` | Builds a `RateLimiterMap<K>` using a custom map implementation. |
+| `buildExecutorService()` | Builds a `RateLimitingExecutorService` with a default single-threaded executor. |
+| `buildExecutorService(ExecutorService)` | Builds a `RateLimitingExecutorService` using the provided executor service. |
