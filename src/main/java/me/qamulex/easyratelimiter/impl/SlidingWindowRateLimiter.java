@@ -12,6 +12,8 @@ public class SlidingWindowRateLimiter extends WindowBasedRateLimiter {
     private long[] window              = new long[0];
     private int    lastWindowSlotIndex = 0;
 
+    private long nextPossibleRequestTimeMillis = 0;
+
     public SlidingWindowRateLimiter(int maxQuota, long windowSizeMillis) {
         super(maxQuota, windowSizeMillis);
     }
@@ -27,6 +29,22 @@ public class SlidingWindowRateLimiter extends WindowBasedRateLimiter {
 
         window = new long[maxQuota];
         lastWindowSlotIndex = maxQuota - 1;
+
+        nextPossibleRequestTimeMillis = 0;
+    }
+
+    public int getUsedQuota() {
+        long now = currentTimeMillis();
+
+        int usedQuota = 0;
+        for (int windowSlotIndex = 0; windowSlotIndex < window.length; windowSlotIndex++) {
+            long timestamp = window[windowSlotIndex];
+            if (timestamp == 0 || now - timestamp >= getWindowSizeMillis())
+                break;
+            usedQuota++;
+        }
+
+        return usedQuota;
     }
 
     @Override
@@ -36,27 +54,18 @@ public class SlidingWindowRateLimiter extends WindowBasedRateLimiter {
         reset();
     }
 
-    private long getOldestTimestamp() {
-        return window[lastWindowSlotIndex];
+    public long getNextPossibleRequestTimeMillis() {
+        return nextPossibleRequestTimeMillis;
     }
 
     @Override
     protected long getTimeUntilNextRequest(long timeMillis) {
-        long oldest = getOldestTimestamp();
-
-        if (oldest == 0)
-            return 0;
-
-        long elapsed = timeMillis - oldest;
-        long remaining = getWindowSizeMillis() - elapsed;
-
-        return Math.max(0, remaining);
+        return Math.max(0, nextPossibleRequestTimeMillis - timeMillis);
     }
 
     @Override
     protected boolean isRequestAllowed(long timeMillis) {
-        return getOldestTimestamp() == 0
-                || (timeMillis - getOldestTimestamp()) >= getWindowSizeMillis();
+        return nextPossibleRequestTimeMillis <= timeMillis;
     }
 
     @Override
@@ -70,6 +79,10 @@ public class SlidingWindowRateLimiter extends WindowBasedRateLimiter {
             window[windowSlotIndex] = window[windowSlotIndex - 1];
         window[0] = now;
 
+        long oldestTimestamp = window[lastWindowSlotIndex];
+        if (oldestTimestamp != 0)
+            nextPossibleRequestTimeMillis = oldestTimestamp + getWindowSizeMillis();
+
         return true;
     }
 
@@ -77,27 +90,19 @@ public class SlidingWindowRateLimiter extends WindowBasedRateLimiter {
     public void reset() {
         for (int windowSlotIndex = 0; windowSlotIndex < window.length; windowSlotIndex++)
             window[windowSlotIndex] = 0;
+
+        nextPossibleRequestTimeMillis = 0;
     }
 
     @Override
     public String toString() {
-        long now = currentTimeMillis();
-
-        int usedQuota = 0;
-        for (int windowSlotIndex = 0; windowSlotIndex <= lastWindowSlotIndex; windowSlotIndex++) {
-            long timestamp = window[windowSlotIndex];
-            long elapsed = now - timestamp;
-            if (elapsed >= getWindowSizeMillis())
-                break;
-            usedQuota++;
-        }
-
         return String.format(
-                "SlidingWindowRateLimiter [maxQuota=%d, windowSizeMillis=%d, usedQuota=%d, timeUntilNextRequest=%d]",
+                "SlidingWindowRateLimiter [maxQuota=%d, windowSizeMillis=%d, usedQuota=%d, nextPossibleRequestTimeMillis=%d, timeUntilNextRequest=%d]",
 
                 getMaxQuota(),
                 getWindowSizeMillis(),
-                usedQuota,
+                getUsedQuota(),
+                nextPossibleRequestTimeMillis,
                 getTimeUntilNextRequest()
         );
     }
