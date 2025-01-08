@@ -9,7 +9,7 @@ public class FixedDelayRateLimiter extends ClockDependentRateLimiter {
 
     private long delayMillis;
 
-    private long nextRequestTime = 0;
+    private long nextRequestTimeMillis = 0;
 
     public FixedDelayRateLimiter(long delayMillis) {
         setDelayMillis(delayMillis);
@@ -27,14 +27,18 @@ public class FixedDelayRateLimiter extends ClockDependentRateLimiter {
         reset();
     }
 
+    public long getNextRequestTimeMillis() {
+        return nextRequestTimeMillis;
+    }
+
     @Override
     protected long getTimeUntilNextRequest(long timeMillis) {
-        return Math.max(0, nextRequestTime - timeMillis);
+        return Math.max(0, nextRequestTimeMillis - timeMillis);
     }
 
     @Override
     protected boolean isRequestAllowed(long timeMillis) {
-        return timeMillis >= nextRequestTime;
+        return timeMillis >= nextRequestTimeMillis;
     }
 
     @Override
@@ -44,22 +48,22 @@ public class FixedDelayRateLimiter extends ClockDependentRateLimiter {
         if (!isRequestAllowed(now))
             return false;
 
-        nextRequestTime = now + delayMillis;
+        nextRequestTimeMillis = now + delayMillis;
         return true;
     }
 
     @Override
     public void reset() {
-        nextRequestTime = 0;
+        nextRequestTimeMillis = 0;
     }
 
     @Override
     public String toString() {
         return String.format(
-                "FixedDelayRateLimiter [delayMillis=%d, nextRequestTime=%d, timeUntilNextRequest=%d]",
+                "FixedDelayRateLimiter [delayMillis=%d, nextRequestTimeMillis=%d, timeUntilNextRequest=%d]",
                 
                 delayMillis,
-                nextRequestTime,
+                nextRequestTimeMillis,
                 getTimeUntilNextRequest()
         );
     }

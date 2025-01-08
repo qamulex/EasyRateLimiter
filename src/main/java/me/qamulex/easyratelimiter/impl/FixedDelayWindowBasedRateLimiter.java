@@ -22,6 +22,14 @@ public class FixedDelayWindowBasedRateLimiter extends ClockDependentRateLimiter 
         this.windowBasedRateLimiter = windowBasedRateLimiter;
     }
 
+    public FixedDelayRateLimiter getFixedDelayRateLimiter() {
+        return fixedDelayRateLimiter;
+    }
+
+    public WindowBasedRateLimiter getWindowBasedRateLimiter() {
+        return windowBasedRateLimiter;
+    }
+
     @Override
     public void setClock(@NonNull Clock clock) {
         super.setClock(clock);
