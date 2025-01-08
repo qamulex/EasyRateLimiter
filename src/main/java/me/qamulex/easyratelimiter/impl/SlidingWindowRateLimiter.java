@@ -48,9 +48,8 @@ public class SlidingWindowRateLimiter extends WindowBasedRateLimiter {
 
         int usedQuota = 0;
         for (long timestamp : window) {
-            if (timestamp == 0 || now - timestamp >= getWindowSizeMillis())
-                break;
-            usedQuota++;
+            if (timestamp != 0 && now - timestamp <= getWindowSizeMillis())
+                usedQuota++;
         }
 
         return usedQuota;
