@@ -14,11 +14,9 @@ import me.qamulex.easyratelimiter.util.WindowType;
  * <p>
  * Requests are tracked dynamically, and the quota is evaluated
  * over the last specified time period.
- * </p>
  * 
  * <p>
  * Provides finer control compared to fixed window rate limiting.
- * </p>
  */
 public class SlidingWindowRateLimiter extends WindowBasedRateLimiter {
 

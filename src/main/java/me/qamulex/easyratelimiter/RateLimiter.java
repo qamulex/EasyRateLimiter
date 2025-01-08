@@ -44,8 +44,9 @@ public interface RateLimiter {
      * Blocks for a specified maximum time until a request is allowed.
      * Captures the request timestamp if the request is successful.
      * 
-     * <p>If the timeout is less than the actual time required for the next request 
-     * to be allowed, the method will not block and will return {@code false} immediately.</p>
+     * <p>
+     * If the timeout is less than the actual time required for the next request
+     * to be allowed, the method will not block and will return {@code false} immediately.
      * 
      * @param timeout the maximum time to wait
      * @param unit    the time unit of the timeout argument
@@ -58,8 +59,9 @@ public interface RateLimiter {
      * Blocks for a specified maximum time until a request is allowed.
      * Captures the request timestamp if the request is successful.
      * 
-     * <p>If the timeout is less than the actual time required for the next request 
-     * to be allowed, the method will not block and will return {@code false} immediately.</p>
+     * <p>
+     * If the timeout is less than the actual time required for the next request
+     * to be allowed, the method will not block and will return {@code false} immediately.
      * 
      * @param duration the maximum duration to wait
      * @return true if the request was allowed within the specified duration, false otherwise.

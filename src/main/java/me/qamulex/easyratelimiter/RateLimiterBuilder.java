@@ -50,7 +50,6 @@ public final class RateLimiterBuilder {
      * <li>maxQuota is {@code 1}.</li>
      * <li>enforceThreadSafety is {@code false}.</li>
      * </ul>
-     * </p>
      * 
      * @return a new RateLimiterBuilder instance.
      */
@@ -70,12 +69,10 @@ public final class RateLimiterBuilder {
      * 
      * <p>
      * Default: {@code null}.
-     * </p>
      * 
      * <p>
      * If {@code clock} is {@code null}, any instance of {@link ClockDependentRateLimiter} created by this builder will use
      * {@link NanoTimeClock#INSTANCE} as the default clock.
-     * </p>
      * 
      * @param clock the clock to be used.
      * @return the current RateLimiterBuilder instance for method chaining.
@@ -89,7 +86,6 @@ public final class RateLimiterBuilder {
      * 
      * <p>
      * Default: {@code 0}.
-     * </p>
      * 
      * @param delayMillis the delay in milliseconds. Must be greater than or equal to zero.
      * @return the current RateLimiterBuilder instance for method chaining.
@@ -107,7 +103,6 @@ public final class RateLimiterBuilder {
      * 
      * <p>
      * Default: {@code 0}.
-     * </p>
      * 
      * @param delay the delay value.
      * @param unit  the time unit for the delay. Must not be null.
@@ -124,7 +119,6 @@ public final class RateLimiterBuilder {
      * 
      * <p>
      * Default: {@code 0}.
-     * </p>
      * 
      * @param delay the delay duration. Must not be null.
      * @return the current RateLimiterBuilder instance for method chaining.
@@ -140,7 +134,6 @@ public final class RateLimiterBuilder {
      * 
      * <p>
      * Default: {@code 0}.
-     * </p>
      * 
      * @param windowSizeMillis the window size in milliseconds. Must be greater than zero.
      * @return the current RateLimiterBuilder instance for method chaining.
@@ -158,7 +151,6 @@ public final class RateLimiterBuilder {
      * 
      * <p>
      * Default: {@code 0}.
-     * </p>
      * 
      * @param windowSize the window size value.
      * @param unit       the time unit for the window size. Must not be null.
@@ -175,7 +167,6 @@ public final class RateLimiterBuilder {
      * 
      * <p>
      * Default: {@code 0}.
-     * </p>
      * 
      * @param windowSize the window size duration. Must not be null.
      * @return the current RateLimiterBuilder instance for method chaining.
@@ -209,7 +200,6 @@ public final class RateLimiterBuilder {
      * 
      * <p>
      * Default: {@code 1}.
-     * </p>
      * 
      * @param maxQuota the maximum quota. Must be greater than zero.
      * @return the current RateLimiterBuilder instance for method chaining.
@@ -227,7 +217,6 @@ public final class RateLimiterBuilder {
      * 
      * <p>
      * Default: {@code false}.
-     * </p>
      * 
      * @param enforceThreadSafety true to enable thread safety, false to disable it.
      * @return the current RateLimiterBuilder instance for method chaining.

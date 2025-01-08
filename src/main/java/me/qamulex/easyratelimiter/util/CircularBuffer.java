@@ -14,11 +14,9 @@ import java.util.NoSuchElementException;
  * <p>
  * Maintains a FIFO (First In, First Out) order, automatically overwriting
  * the oldest elements when the buffer is full.
- * </p>
  * 
  * <p>
  * Supports random access, iteration, and clearing operations.
- * </p>
  * 
  * @param <T> the type of elements stored in the buffer.
  */

@@ -16,12 +16,10 @@ import me.qamulex.easyratelimiter.RateLimiter;
  * <p>
  * Provides common logic for rate limiting, such as blocking until a request
  * is allowed and handling timeouts.
- * </p>
  * 
  * <p>
  * Designed to be extended by specific rate limiter implementations to
  * customize the behavior of rate limiting methods.
- * </p>
  */
 public abstract class AbstractRateLimiter implements RateLimiter {
 
