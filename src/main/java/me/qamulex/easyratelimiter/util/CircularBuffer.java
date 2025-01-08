@@ -8,13 +8,27 @@ package me.qamulex.easyratelimiter.util;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+/**
+ * A circular buffer implementation with a fixed capacity.
+ * 
+ * <p>
+ * Maintains a FIFO (First In, First Out) order, automatically overwriting
+ * the oldest elements when the buffer is full.
+ * </p>
+ * 
+ * <p>
+ * Supports random access, iteration, and clearing operations.
+ * </p>
+ * 
+ * @param <T> the type of elements stored in the buffer.
+ */
 public class CircularBuffer<T> implements Iterable<T> {
 
     private final T[] buffer;
 
-    private int headIndex  = 0;
-    private int tailIndex  = 0;
-    private int size = 0;
+    private int headIndex = 0;
+    private int tailIndex = 0;
+    private int size      = 0;
 
     public CircularBuffer(T[] buffer) {
         if (buffer.length <= 0)

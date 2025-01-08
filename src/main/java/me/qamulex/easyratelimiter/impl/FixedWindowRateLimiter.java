@@ -7,6 +7,18 @@ package me.qamulex.easyratelimiter.impl;
 
 import me.qamulex.easyratelimiter.util.WindowType;
 
+/**
+ * A rate limiter that allows a fixed number of requests within a predefined time window.
+ * 
+ * <p>
+ * All requests in the same window share the same quota. Once the quota
+ * is exceeded, requests are denied until the next window starts.
+ * </p>
+ * 
+ * <p>
+ * Suitable for scenarios where rate limits are applied in discrete time periods.
+ * </p>
+ */
 public class FixedWindowRateLimiter extends WindowBasedRateLimiter {
 
     private int  usedQuota            = 0;

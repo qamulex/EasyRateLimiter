@@ -8,6 +8,18 @@ package me.qamulex.easyratelimiter.impl;
 import me.qamulex.easyratelimiter.util.CircularBuffer;
 import me.qamulex.easyratelimiter.util.WindowType;
 
+/**
+ * A rate limiter that allows a fixed number of requests over a sliding time window.
+ * 
+ * <p>
+ * Requests are tracked dynamically, and the quota is evaluated
+ * over the last specified time period.
+ * </p>
+ * 
+ * <p>
+ * Provides finer control compared to fixed window rate limiting.
+ * </p>
+ */
 public class SlidingWindowRateLimiter extends WindowBasedRateLimiter {
 
     private CircularBuffer<Long> window;

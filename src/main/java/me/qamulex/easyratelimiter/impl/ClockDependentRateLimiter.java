@@ -10,6 +10,18 @@ import java.time.Clock;
 import lombok.NonNull;
 import me.qamulex.easyratelimiter.util.NanoTimeClock;
 
+/**
+ * An abstract rate limiter that relies on a Clock instance for time-based calculations.
+ * 
+ * <p>
+ * Subclasses can use the provided clock to control the timing of requests
+ * and customize rate-limiting logic.
+ * </p>
+ * 
+ * <p>
+ * Allows easy integration of custom time sources for testing or special scenarios.
+ * </p>
+ */
 public abstract class ClockDependentRateLimiter extends AbstractRateLimiter {
 
     private Clock clock = NanoTimeClock.INSTANCE;

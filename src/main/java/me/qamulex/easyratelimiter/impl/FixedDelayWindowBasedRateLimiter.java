@@ -9,6 +9,18 @@ import java.time.Clock;
 
 import lombok.NonNull;
 
+/**
+ * A composite rate limiter that combines fixed delay and window-based rate limiting.
+ * 
+ * <p>
+ * Requests are allowed only if both the fixed delay and the window-based
+ * quota conditions are satisfied.
+ * </p>
+ * 
+ * <p>
+ * Useful for scenarios requiring both frequency control and time-windowed limits.
+ * </p>
+ */
 public class FixedDelayWindowBasedRateLimiter extends ClockDependentRateLimiter {
 
     private final FixedDelayRateLimiter  fixedDelayRateLimiter;

@@ -5,6 +5,18 @@
  */
 package me.qamulex.easyratelimiter.impl;
 
+/**
+ * A rate limiter that enforces a fixed delay between requests.
+ * 
+ * <p>
+ * Requests are allowed only after a specified delay has elapsed since the
+ * last successful request.
+ * </p>
+ * 
+ * <p>
+ * Useful for controlling the frequency of events or actions.
+ * </p>
+ */
 public class FixedDelayRateLimiter extends ClockDependentRateLimiter {
 
     private long delayMillis;
@@ -61,7 +73,7 @@ public class FixedDelayRateLimiter extends ClockDependentRateLimiter {
     public String toString() {
         return String.format(
                 "FixedDelayRateLimiter [delayMillis=%d, nextRequestTimeMillis=%d, timeUntilNextRequest=%d]",
-                
+
                 delayMillis,
                 nextRequestTimeMillis,
                 getTimeUntilNextRequest()

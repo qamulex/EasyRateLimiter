@@ -10,6 +10,19 @@ import java.util.concurrent.TimeUnit;
 
 import me.qamulex.easyratelimiter.RateLimiter;
 
+/**
+ * A base implementation of the RateLimiter interface.
+ * 
+ * <p>
+ * Provides common logic for rate limiting, such as blocking until a request
+ * is allowed and handling timeouts.
+ * </p>
+ * 
+ * <p>
+ * Designed to be extended by specific rate limiter implementations to
+ * customize the behavior of rate limiting methods.
+ * </p>
+ */
 public abstract class AbstractRateLimiter implements RateLimiter {
 
     @Override

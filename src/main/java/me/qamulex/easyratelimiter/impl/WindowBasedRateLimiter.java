@@ -7,6 +7,19 @@ package me.qamulex.easyratelimiter.impl;
 
 import me.qamulex.easyratelimiter.util.WindowType;
 
+/**
+ * An abstract rate limiter that enforces limits based on a time window.
+ * 
+ * <p>
+ * Defines properties such as maximum quota and window size, and provides
+ * basic logic for managing them.
+ * </p>
+ * 
+ * <p>
+ * Subclasses can implement specific windowing strategies, such as fixed
+ * or sliding windows, by overriding abstract methods.
+ * </p>
+ */
 public abstract class WindowBasedRateLimiter extends ClockDependentRateLimiter {
 
     private int  maxQuota;
