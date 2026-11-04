@@ -54,4 +54,34 @@ class SlidingWindowRateLimiterTest extends ClockDependentRateLimiterTestBase {
         assertTrue(rateLimiter.tryRequest());
     }
 
+    @Test
+    void testWindowBoundaryIsExclusive() {
+        SlidingWindowRateLimiter rateLimiter = initCDRL(() -> new SlidingWindowRateLimiter(5, 500));
+
+        for (int i = 0; i < 5; i++)
+            assertTrue(rateLimiter.tryRequest()); // burst of 5 at the same instant
+
+        sleep(499);
+        assertFalse(rateLimiter.tryRequest());
+        assertEquals(5, rateLimiter.getUsedQuota());
+
+        sleep(1); // exactly 500 ms after the oldest request: it has just expired
+        assertTrue(rateLimiter.tryRequest());
+        assertEquals(1, rateLimiter.getUsedQuota());
+    }
+
+    @Test
+    void testAdmissionConsistentWithUsedQuota() {
+        SlidingWindowRateLimiter rateLimiter = initCDRL(() -> new SlidingWindowRateLimiter(3, 1000));
+
+        long startTime = getTime();
+        for (int i = 0; i < 50; i++) {
+            setTime(startTime + i * 137);
+
+            boolean allowedByUsedQuota = rateLimiter.getUsedQuota() < 3;
+            boolean admitted = rateLimiter.tryRequest();
+            assertEquals(allowedByUsedQuota, admitted);
+        }
+    }
+
 }
