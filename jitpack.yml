@@ -1,0 +1,3 @@
+jdk: openjdk17
+install:
+  - ./gradlew build publishToMavenLocal --console=plain -x test

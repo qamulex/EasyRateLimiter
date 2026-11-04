@@ -4,17 +4,17 @@ As the name says - makes it easy to limit the frequency of requests.
 
 ## Installation
 
-**EasyRateLimiter** requires Java 8 or higher.
+**EasyRateLimiter** requires Java 17 or higher.
 
 ### Gradle
 
 ```groovy
 repositories {
-    maven { url "https://nexus.lowperformance.dev/repository/maven-public/" }
+    maven { url "https://jitpack.io" }
 }
 
 dependencies {
-    implementation "me.qamulex:easyratelimiter:3.0"
+    implementation "com.github.qamulex:EasyRateLimiter:v3.0.1"
 }
 ```
 
@@ -23,22 +23,23 @@ dependencies {
 ```xml
 <repositories>
     <repository>
-        <id>lowperformancedev</id>
-        <url>https://nexus.lowperformance.dev/repository/maven-public/</url>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
     </repository>
 </repositories>
 
 <dependencies>
     <dependency>
-        <groupId>me.qamulex</groupId>
-        <artifactId>easyratelimiter</artifactId>
-        <version>3.0</version>
-        <scope>compile</scope>
+        <groupId>com.github.qamulex</groupId>
+        <artifactId>EasyRateLimiter</artifactId>
+        <version>v3.0.1</version>
     </dependency>
 </dependencies>
 ```
 
 ## Usage
+
+> **Thread-safety is off by default.** All limiter implementations are designed for single-threaded use; their state is not synchronized. If the same instance will be accessed from multiple threads, enable synchronization explicitly with `enforceThreadSafety(true)` on the builder.
 
 ### Fixed Delay
 
@@ -88,6 +89,7 @@ for (int i = 0; i < 10; i++) {
     Thread.sleep(150);
 }
 ```
+
 ### Combination: Fixed Delay + Window-Based
 
 ```java
@@ -138,7 +140,7 @@ RateLimiterMap<String> limiters = RateLimiterBuilder.newBuilder()
 ExecutorService executorService = RateLimiterBuilder.newBuilder()
         .withDelay(50, TimeUnit.MILLISECONDS)
         .withWindowSize(200, TimeUnit.MILLISECONDS)
-        .withQuota(2)
+        .withMaxQuota(2)
         .buildExecutorService();
 
 for (int i = 0; i < 8; i++) {
@@ -169,6 +171,7 @@ Output:
 | `tryRequest()` | Attempts to perform a request without blocking. |
 | `blockUntilRequestAllowed()` | Blocks until a request is allowed. |
 | `blockUntilRequestAllowed(long, TimeUnit)` | Blocks for a maximum time until a request is allowed. |
+| `blockUntilRequestAllowed(Duration)` | Blocks for a maximum duration until a request is allowed. |
 | `reset()` | Resets the limiter state. |
 
 ### `RateLimiterBuilder` Methods
@@ -176,7 +179,10 @@ Output:
 |-|-|
 | `static newBuilder()` | Creates a new builder instance. |
 | `withDelay(long, TimeUnit)` | Configures the delay between requests. |
+| `withDelay(Duration)` | Configures the delay between requests. |
 | `withWindowSize(long, TimeUnit)` | Configures the size of the time window. |
+| `withWindowSize(Duration)` | Configures the size of the time window. |
+| `withClock(Clock)` | Configures a custom clock implementation. |
 | `withMaxQuota(int)` | Configures the maximum number of requests within window. |
 | `useFixedWindow()` | Configures to use fixed time window strategy. |
 | `useSlidingWindow()` | Configures to use sliding time window strategy. |
@@ -186,3 +192,24 @@ Output:
 | `<K> buildMap(Map<K, RateLimiter>)` | Builds a `RateLimiterMap<K>` using a custom map implementation. |
 | `buildExecutorService()` | Builds a `RateLimitingExecutorService` with a default single-threaded executor. |
 | `buildExecutorService(ExecutorService)` | Builds a `RateLimitingExecutorService` using the provided executor service. |
+
+### `RateLimiterMap<K>` Methods
+
+Implements `Map<K, RateLimiter>` - all standard `Map` methods delegate to the backing map.
+
+| Method | Description |
+|-|-|
+| `get(Object key)` | Returns the limiter for the key, lazily creating a new one from the builder configuration if absent. |
+
+### `RateLimitingExecutorService` Methods
+
+Extends `AbstractExecutorService` - the standard `ExecutorService` contract applies, but a submitted task is handed to the underlying executor only after the rate limiter allows it. Pending tasks wait in an internal queue (unbounded, no backpressure).
+
+| Method | Description |
+|-|-|
+| `execute(Runnable)` | Submits a task; it starts only when the limiter permits. |
+| `shutdown()` | Rejects new tasks; already queued tasks are still executed (through the limiter) before termination. |
+| `shutdownNow()` | Rejects new tasks, interrupts the running task, and returns all tasks that have not started yet. |
+| `awaitTermination(long, TimeUnit)` | Blocks until all tasks complete after a shutdown request, or the timeout expires. |
+| `isShutdown()` | Returns `true` once shutdown has been requested. |
+| `isTerminated()` | Returns `true` when all tasks have completed following shutdown. |
