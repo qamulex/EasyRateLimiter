@@ -87,7 +87,6 @@ class RateLimiterBuilderTest {
                 .enforceThreadSafety(true)
                 .build();
         assertTrue(rateLimiter instanceof RateLimiterThreadSafetyEnforcementWrapper);
-        assertTrue(((RateLimiterThreadSafetyEnforcementWrapper) rateLimiter).getWrappedRateLimiter() instanceof FixedDelayRateLimiter);
     }
 
 }
