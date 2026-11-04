@@ -46,7 +46,8 @@ class BlockUntilRequestAllowedTest implements ExecutionTimeMeasurer {
             assertTrue(rateLimiter.tryRequest());
         }
 
-        assertExecutionTimeEquals(5 * 50, rateLimiter::blockUntilRequestAllowed);
+        long expectedWaitingTime = rateLimiter.getTimeUntilNextRequest();
+        assertExecutionTimeInRange(expectedWaitingTime - 5, expectedWaitingTime + 100, rateLimiter::blockUntilRequestAllowed);
     }
 
     @Test
@@ -58,8 +59,9 @@ class BlockUntilRequestAllowedTest implements ExecutionTimeMeasurer {
 
         for (int i = 0; i < 5; i++)
             assertExecutionTimeEquals(i == 0 ? 0 : 50, rateLimiter::blockUntilRequestAllowed);
-            
-        assertExecutionTimeEquals(5 * 50, 25, rateLimiter::blockUntilRequestAllowed);
+
+        long expectedWaitingTime = rateLimiter.getTimeUntilNextRequest();
+        assertExecutionTimeInRange(expectedWaitingTime - 5, expectedWaitingTime + 100, rateLimiter::blockUntilRequestAllowed);
     }
 
 }

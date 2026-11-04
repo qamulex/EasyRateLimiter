@@ -81,7 +81,8 @@ class RateLimiterConcurrencyTest implements ExecutionTimeMeasurer {
         int numberOfThreads = 16;
         AtomicInteger successCount = new AtomicInteger(0);
 
-        assertExecutionTimeEquals(delayMillis * (numberOfThreads - 1), 100, () -> {
+        long expectedWaitingTime = delayMillis * (numberOfThreads - 1);
+        assertExecutionTimeInRange(expectedWaitingTime - 5, expectedWaitingTime + 100, () -> {
             CountDownLatch startLatch = new CountDownLatch(1);
             CountDownLatch doneLatch = new CountDownLatch(numberOfThreads);
 

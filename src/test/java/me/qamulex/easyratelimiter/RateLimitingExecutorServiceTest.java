@@ -45,7 +45,8 @@ class RateLimitingExecutorServiceTest implements ExecutionTimeMeasurer {
     void testRateLimiting() {
         AtomicInteger counter = new AtomicInteger(0);
 
-        assertExecutionTimeEquals(delayMillis * (taskCount - 1), 100, () -> {
+        long expectedWaitingTime = delayMillis * (taskCount - 1);
+        assertExecutionTimeInRange(expectedWaitingTime - 5, expectedWaitingTime + 100, () -> {
             CountDownLatch latch = new CountDownLatch(taskCount);
 
             for (int i = 0; i < taskCount; i++) {
@@ -65,7 +66,8 @@ class RateLimitingExecutorServiceTest implements ExecutionTimeMeasurer {
     void testConcurrentSubmissions() {
         AtomicInteger counter = new AtomicInteger(0);
 
-        assertExecutionTimeEquals(delayMillis * (taskCount - 1), 100, () -> {
+        long expectedWaitingTime = delayMillis * (taskCount - 1);
+        assertExecutionTimeInRange(expectedWaitingTime - 5, expectedWaitingTime + 100, () -> {
             CountDownLatch latch = new CountDownLatch(taskCount);
 
             for (int i = 0; i < taskCount; i++) {
@@ -87,7 +89,8 @@ class RateLimitingExecutorServiceTest implements ExecutionTimeMeasurer {
     void testTaskExecutionOrder() {
         StringBuilder executionOrder = new StringBuilder();
 
-        assertExecutionTimeEquals(delayMillis * (taskCount - 1), 100, () -> {
+        long expectedWaitingTime = delayMillis * (taskCount - 1);
+        assertExecutionTimeInRange(expectedWaitingTime - 5, expectedWaitingTime + 100, () -> {
             CountDownLatch latch = new CountDownLatch(taskCount);
 
             for (int i = 0; i < taskCount; i++) {
