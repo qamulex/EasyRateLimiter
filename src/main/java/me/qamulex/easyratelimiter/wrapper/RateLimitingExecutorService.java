@@ -67,6 +67,19 @@ public class RateLimitingExecutorService extends AbstractExecutorService {
         this.dispatcher.start();
     }
 
+    /**
+     * Returns the rate limiter used to gate task execution.
+     *
+     * <p>
+     * The returned instance is the one passed to the constructor; this service
+     * only acquires permits from it and never mutates its configuration.
+     *
+     * @return the rate limiter backing this executor service
+     */
+    public RateLimiter getRateLimiter() {
+        return rateLimiter;
+    }
+
     @Override
     public void execute(Runnable command) {
         synchronized (lock) {

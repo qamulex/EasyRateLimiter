@@ -14,7 +14,7 @@ repositories {
 }
 
 dependencies {
-    implementation "com.github.qamulex:EasyRateLimiter:3.0.1"
+    implementation "com.github.qamulex:EasyRateLimiter:3.0.2"
 }
 ```
 
@@ -32,7 +32,7 @@ dependencies {
     <dependency>
         <groupId>com.github.qamulex</groupId>
         <artifactId>EasyRateLimiter</artifactId>
-        <version>3.0.1</version>
+        <version>3.0.2</version>
     </dependency>
 </dependencies>
 ```
